@@ -1,0 +1,5206 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <!-- iPhone / iOS Web App meta-tags (inclusief notch/Dynamic Island safe-area ondersteuning) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="NGJ Taken" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="theme-color" id="theme-color-meta" content="#f8fafc" />
+
+  <title>Takenlijst — NextGen Journalism</title>
+
+  <!-- Inline SVG Favicon voor desktopbrowsers -->
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ffffff'/%3E%3Ccircle cx='28' cy='27' r='16' fill='none' stroke='%23cbd5e1' stroke-width='4.5'/%3E%3Cline x1='40' y1='39' x2='54' y2='53' stroke='%23cbd5e1' stroke-width='5.5' stroke-linecap='round'/%3E%3Ctext x='28' y='34' text-anchor='middle' font-family='Georgia, serif' font-size='22' fill='%23e2e8f0'%3EC%3C/text%3E%3Ctext x='31' y='35' text-anchor='middle' font-family='Georgia, serif' font-weight='700' font-size='21' fill='%230a2240'%3ENG%3C/text%3E%3Cpath d='M13 46 C23 51, 37 42, 50 45 C52 45.5, 52 48, 49.5 48.5' fill='none' stroke='%230a2240' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E"
+  />
+
+  <!-- Apple Touch Icon (180x180 PNG) & Web App Manifest (worden direct via offscreen canvas & Blob URL gevuld) -->
+  <link rel="apple-touch-icon" sizes="180x180" id="apple-touch-icon" href="" />
+  <link rel="manifest" id="app-manifest" href="" />
+
+  <style>
+    /* =====================================================================
+       Design Tokens & Thema-variabelen (Licht & Donker, 100% offline CSS)
+       ===================================================================== */
+    :root {
+      --bg-page: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --bg-hover: #e2e8f0;
+      --border-color: #e2e8f0;
+      --border-strong: #cbd5e1;
+
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+
+      --brand-navy: #0a2240;
+      --accent: #3b5bdb;
+      --accent-hover: #2f49b8;
+      --accent-soft: #eef2ff;
+      --accent-soft-text: #3730a3;
+      --accent-soft-border: #c7d2fe;
+
+      /* Kleuren voor 'Bespreken met' (Teal) */
+      --person-soft: #f0fdfa;
+      --person-border: #99f6e4;
+      --person-text: #0f766e;
+      --person-dot: #0d9488;
+
+      /* Kleuren voor handmatige tags (Violet) */
+      --tag-soft: #f5f3ff;
+      --tag-border: #ddd6fe;
+      --tag-text: #6d28d9;
+
+      --danger: #dc2626;
+      --danger-soft: #fef2f2;
+      --danger-border: #fecaca;
+      --danger-text: #b91c1c;
+
+      --warning: #d97706;
+      --warning-soft: #fffbeb;
+      --warning-border: #fde68a;
+      --warning-text: #92400e;
+
+      --success: #16a34a;
+      --success-soft: #f0fdf4;
+      --success-border: #bbf7d0;
+      --success-text: #15803d;
+
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+      --shadow-lg: 0 16px 36px rgba(15, 23, 42, 0.16);
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    html.dark {
+      --bg-page: #0f172a;
+      --bg-surface: #1e293b;
+      --bg-subtle: #162032;
+      --bg-hover: #283549;
+      --border-color: #2c3a50;
+      --border-strong: #3d4f6b;
+
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --accent-soft: rgba(99, 102, 241, 0.18);
+      --accent-soft-text: #c7d2fe;
+      --accent-soft-border: rgba(129, 140, 248, 0.34);
+
+      --person-soft: rgba(20, 184, 166, 0.16);
+      --person-border: rgba(45, 212, 191, 0.34);
+      --person-text: #5eead4;
+      --person-dot: #14b8a6;
+
+      --tag-soft: rgba(139, 92, 246, 0.16);
+      --tag-border: rgba(167, 139, 250, 0.34);
+      --tag-text: #c4b5fd;
+
+      --danger: #ef4444;
+      --danger-soft: rgba(239, 68, 68, 0.16);
+      --danger-border: rgba(248, 113, 113, 0.34);
+      --danger-text: #fca5a5;
+
+      --warning: #f59e0b;
+      --warning-soft: rgba(245, 158, 11, 0.16);
+      --warning-border: rgba(251, 191, 36, 0.34);
+      --warning-text: #fcd34d;
+
+      --success: #22c55e;
+      --success-soft: rgba(34, 197, 94, 0.16);
+      --success-border: rgba(74, 222, 128, 0.32);
+      --success-text: #86efac;
+
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
+      --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.32);
+      --shadow-lg: 0 20px 44px rgba(0, 0, 0, 0.55);
+    }
+
+    /* =====================================================================
+       Basis-reset, Safe Area Insets & Touch-optimalisaties (iOS / iPhone)
+       ===================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      overflow-x: hidden;
+      background-color: var(--bg-page);
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      font-family: var(--font-sans);
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+      color: inherit;
+      touch-action: manipulation;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 16px 14px calc(92px + env(safe-area-inset-bottom));
+    }
+
+    @media (min-width: 640px) {
+      .app-container {
+        padding: 28px 24px calc(100px + env(safe-area-inset-bottom));
+      }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* =====================================================================
+       Header & NextGen Journalism Branding
+       ===================================================================== */
+    .app-header {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding-top: 2px;
+    }
+
+    @media (min-width: 820px) {
+      .app-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-badge {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 5px 9px;
+      box-shadow: 0 2px 8px rgba(10, 34, 64, 0.08);
+    }
+
+    .brand-logo-svg {
+      display: block;
+      width: 104px;
+      height: 48px;
+    }
+
+    @media (min-width: 640px) {
+      .brand-logo-svg {
+        width: 116px;
+        height: 54px;
+      }
+    }
+
+    .brand-titles {
+      min-width: 0;
+    }
+
+    .app-title {
+      margin: 0;
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    @media (min-width: 640px) {
+      .app-title {
+        font-size: 1.6rem;
+      }
+    }
+
+    .app-date {
+      margin: 3px 0 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: capitalize;
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* =====================================================================
+       Knoppen (Touch-vriendelijk)
+       ===================================================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 14px;
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, color 0.15s ease;
+      white-space: nowrap;
+      min-height: 42px;
+      touch-action: manipulation;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .btn-primary {
+      background-color: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(59, 91, 219, 0.25);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-surface);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background-color: var(--bg-hover);
+      border-color: var(--border-strong);
+    }
+
+    .btn-warning {
+      background-color: var(--warning);
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25);
+    }
+
+    .btn-warning:hover:not(:disabled) {
+      filter: brightness(0.93);
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+      color: #ffffff;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      filter: brightness(0.92);
+    }
+
+    .btn-danger-soft {
+      background-color: var(--danger-soft);
+      color: var(--danger-text);
+      border-color: var(--danger-border);
+      min-height: 38px;
+      padding: 6px 12px;
+      font-size: 0.82rem;
+    }
+
+    .btn-danger-soft:hover:not(:disabled) {
+      filter: brightness(0.96);
+    }
+
+    .btn-ghost {
+      background-color: transparent;
+      color: var(--text-secondary);
+      border-color: transparent;
+      padding: 8px;
+      min-height: 40px;
+      min-width: 40px;
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      background-color: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .btn-icon {
+      padding: 9px;
+      min-width: 42px;
+    }
+
+    .btn-compact {
+      min-height: 40px;
+      padding: 7px 12px;
+      font-size: 0.84rem;
+    }
+
+    /* =====================================================================
+       Back-up Statusbalk & Opvallende Herinneringsbalk (Desktop + iPhone)
+       ===================================================================== */
+    .backup-status-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 12px 15px;
+      margin-bottom: 14px;
+      font-size: 0.83rem;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    @media (min-width: 760px) {
+      .backup-status-bar {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 18px;
+      }
+    }
+
+    .backup-status-left {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 14px;
+      min-width: 0;
+    }
+
+    .device-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      background-color: var(--accent-soft);
+      border: 1px solid var(--accent-soft-border);
+      color: var(--accent-soft-text);
+      font-weight: 600;
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    .device-pill svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    .backup-counter-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .backup-mini-track {
+      width: 58px;
+      height: 6px;
+      border-radius: var(--radius-full);
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .backup-mini-fill {
+      height: 100%;
+      width: 0%;
+      background-color: var(--accent);
+      border-radius: var(--radius-full);
+      transition: width 0.25s ease, background-color 0.25s ease;
+    }
+
+    .backup-mini-fill.warn {
+      background-color: var(--warning);
+    }
+
+    .backup-meta-text {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .backup-toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex-shrink: 0;
+    }
+
+    /* Moderne toggle-schakelaar */
+    .switch-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      min-height: 36px;
+    }
+
+    .switch-input {
+      position: relative;
+      appearance: none;
+      -webkit-appearance: none;
+      width: 42px;
+      height: 24px;
+      border-radius: var(--radius-full);
+      background-color: var(--border-strong);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      flex-shrink: 0;
+      margin: 0;
+    }
+
+    .switch-input::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background-color: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+      transition: transform 0.2s ease;
+    }
+
+    .switch-input:checked {
+      background-color: var(--accent);
+    }
+
+    .switch-input:checked::after {
+      transform: translateX(18px);
+    }
+
+    .info-hint-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid var(--border-strong);
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: help;
+      flex-shrink: 0;
+    }
+
+    /* Opvallende herinneringsbalk */
+    .backup-reminder-banner {
+      background-color: var(--warning-soft);
+      border: 1px solid var(--warning-border);
+      border-left: 4px solid var(--warning);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 15px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: bannerFadeIn 0.22s ease-out;
+    }
+
+    .backup-reminder-banner.mode-merged-tip {
+      background-color: var(--accent-soft);
+      border-color: var(--accent-soft-border);
+      border-left-color: var(--accent);
+    }
+
+    @keyframes bannerFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .backup-reminder-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+    }
+
+    .backup-reminder-icon {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      margin-top: 1px;
+      color: var(--warning);
+    }
+
+    .backup-reminder-banner.mode-merged-tip .backup-reminder-icon {
+      color: var(--accent);
+    }
+
+    .backup-reminder-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .backup-reminder-title {
+      margin: 0 0 4px;
+      font-size: 0.96rem;
+      font-weight: 700;
+      color: var(--warning-text);
+    }
+
+    .backup-reminder-banner.mode-merged-tip .backup-reminder-title {
+      color: var(--accent-soft-text);
+    }
+
+    .backup-reminder-text {
+      margin: 0;
+      font-size: 0.87rem;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .backup-reminder-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      padding-left: 0;
+    }
+
+    @media (min-width: 640px) {
+      .backup-reminder-actions {
+        padding-left: 33px;
+      }
+    }
+
+    /* =====================================================================
+       Kaarten & Secties
+       ===================================================================== */
+    .card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 16px;
+      margin-bottom: 16px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    @media (min-width: 640px) {
+      .card {
+        padding: 20px 22px;
+        margin-bottom: 18px;
+      }
+    }
+
+    /* =====================================================================
+       Voortgangsbalk
+       ===================================================================== */
+    .progress-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px 12px;
+      margin-bottom: 10px;
+      font-size: 0.875rem;
+    }
+
+    .progress-label {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .progress-stats {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 10px;
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), #14b8a6);
+      border-radius: var(--radius-full);
+      transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* =====================================================================
+       Formuliervelden, Persoon-selectie & Tag-chips invoer
+       ===================================================================== */
+    .form-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      max-width: 100%;
+      padding: 9px 12px;
+      font-size: 0.92rem;
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+      min-height: 42px;
+    }
+
+    .form-textarea {
+      min-height: 140px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      background-color: var(--bg-surface);
+    }
+
+    .add-task-top {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    @media (min-width: 640px) {
+      .add-task-top {
+        flex-direction: row;
+        align-items: stretch;
+      }
+    }
+
+    .add-task-top .form-input {
+      flex: 1;
+      font-size: 0.96rem;
+    }
+
+    .form-grid-5 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    @media (min-width: 540px) {
+      .form-grid-5 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 860px) {
+      .form-grid-5 {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 540px) {
+      .form-grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .person-select-row {
+      display: flex;
+      align-items: stretch;
+      gap: 6px;
+    }
+
+    .person-select-row .form-select {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .add-person-mini-btn {
+      flex-shrink: 0;
+      width: 44px;
+      min-width: 44px;
+      min-height: 42px;
+      padding: 0;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-subtle);
+      color: var(--text-primary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 600;
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .add-person-mini-btn:hover {
+      background-color: var(--person-soft);
+      border-color: var(--person-border);
+      color: var(--person-text);
+    }
+
+    /* Interactieve tag-editor */
+    .tag-editor-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tag-input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    @media (min-width: 540px) {
+      .tag-input-row {
+        flex-direction: row;
+        align-items: stretch;
+      }
+    }
+
+    .tag-input-row .form-input {
+      flex: 1;
+    }
+
+    .tag-chips-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 4px;
+    }
+
+    .tag-chips-list:empty {
+      display: none;
+    }
+
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 11px;
+      border-radius: var(--radius-full);
+      background-color: var(--tag-soft);
+      border: 1px solid var(--tag-border);
+      color: var(--tag-text);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .tag-chip-remove {
+      background: transparent;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      padding: 0 3px;
+      font-size: 1.05rem;
+      line-height: 1;
+      opacity: 0.8;
+      border-radius: 50%;
+    }
+
+    .tag-chip-remove:hover {
+      opacity: 1;
+    }
+
+    /* =====================================================================
+       Zoek- en Filterbalk
+       ===================================================================== */
+    .filters-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 15px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .search-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    @media (min-width: 640px) {
+      .search-row {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
+
+    .search-wrapper {
+      position: relative;
+      flex: 1;
+      width: 100%;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 17px;
+      height: 17px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .search-input {
+      padding-left: 38px;
+      padding-right: 40px;
+    }
+
+    .search-clear-btn {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 7px;
+      border-radius: var(--radius-sm);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .search-clear-btn:hover {
+      color: var(--text-primary);
+      background-color: var(--bg-hover);
+    }
+
+    .filter-dropdowns {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    @media (min-width: 500px) {
+      .filter-dropdowns {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 780px) {
+      .filter-dropdowns {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (min-width: 960px) {
+      .filter-dropdowns {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+
+    .filter-dropdowns .form-select {
+      font-size: 0.85rem;
+      padding: 8px 10px;
+      min-height: 40px;
+    }
+
+    /* =====================================================================
+       Sectiekaarten: Actieve taken & Afgeronde taken
+       ===================================================================== */
+    .section-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      margin-bottom: 22px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .section-card-header {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 15px 16px;
+      background-color: var(--bg-subtle);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    @media (min-width: 640px) {
+      .section-card-header {
+        padding: 16px 20px;
+      }
+    }
+
+    .section-card.collapsed .section-card-header {
+      border-bottom: none;
+    }
+
+    .section-header-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .section-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .count-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 26px;
+      height: 24px;
+      padding: 0 9px;
+      border-radius: var(--radius-full);
+      font-size: 0.78rem;
+      font-weight: 700;
+      background-color: var(--accent-soft);
+      color: var(--accent-soft-text);
+      border: 1px solid var(--accent-soft-border);
+    }
+
+    .count-pill-success {
+      background-color: var(--success-soft);
+      color: var(--success-text);
+      border-color: var(--success-border);
+    }
+
+    .collapse-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      background: transparent;
+      border: none;
+      padding: 6px 6px 6px 0;
+      cursor: pointer;
+      color: var(--text-primary);
+      text-align: left;
+      border-radius: var(--radius-sm);
+      min-height: 40px;
+    }
+
+    .collapse-toggle-btn:hover .section-title {
+      color: var(--accent);
+    }
+
+    .chevron-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .section-card.collapsed .chevron-icon {
+      transform: rotate(-90deg);
+    }
+
+    .section-header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .group-controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .group-controls-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .segmented-control {
+      display: inline-flex;
+      flex-wrap: wrap;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 3px;
+      gap: 3px;
+      box-shadow: var(--shadow-sm);
+      max-width: 100%;
+    }
+
+    .segment-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.81rem;
+      font-weight: 600;
+      padding: 7px 11px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease;
+      min-height: 36px;
+    }
+
+    .segment-btn:hover {
+      color: var(--text-primary);
+      background-color: var(--bg-hover);
+    }
+
+    .segment-btn.active {
+      background-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .section-card-body {
+      padding: 16px;
+    }
+
+    @media (min-width: 640px) {
+      .section-card-body {
+        padding: 18px 20px 22px;
+      }
+    }
+
+    .section-card.collapsed .section-card-body {
+      display: none;
+    }
+
+    /* =====================================================================
+       Groepskoppen binnen Actieve & Afgeronde taken
+       ===================================================================== */
+    .task-groups-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .task-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .task-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: var(--radius-md);
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+    }
+
+    .task-group-header.accent-danger {
+      background-color: var(--danger-soft);
+      border-color: var(--danger-border);
+      color: var(--danger-text);
+    }
+
+    .task-group-header.accent-warning {
+      background-color: var(--warning-soft);
+      border-color: var(--warning-border);
+      color: var(--warning-text);
+    }
+
+    .task-group-header.accent-success {
+      background-color: var(--success-soft);
+      border-color: var(--success-border);
+      color: var(--success-text);
+    }
+
+    .task-group-header.accent-info {
+      background-color: var(--accent-soft);
+      border-color: var(--accent-soft-border);
+      color: var(--accent-soft-text);
+    }
+
+    .task-group-header.accent-person {
+      background-color: var(--person-soft);
+      border-color: var(--person-border);
+      color: var(--person-text);
+    }
+
+    .task-group-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      font-size: 0.88rem;
+      font-weight: 700;
+      min-width: 0;
+    }
+
+    .group-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .group-dot-danger { background-color: var(--danger); }
+    .group-dot-warning { background-color: var(--warning); }
+    .group-dot-success { background-color: var(--success); }
+    .group-dot-info { background-color: var(--accent); }
+    .group-dot-person { background-color: var(--person-dot); }
+    .group-dot-neutral { background-color: var(--text-muted); }
+
+    .task-group-count {
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      background-color: var(--bg-surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    /* =====================================================================
+       Takenlijst & Taakkaarten
+       ===================================================================== */
+    .task-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px 14px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease, background-color 0.2s ease;
+    }
+
+    .task-item:hover {
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-md);
+    }
+
+    .task-item.completed {
+      background-color: var(--bg-subtle);
+      box-shadow: none;
+    }
+
+    .task-checkbox-wrap {
+      padding-top: 1px;
+      flex-shrink: 0;
+    }
+
+    .task-checkbox {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      border: 2px solid var(--border-strong);
+      background-color: var(--bg-surface);
+      cursor: pointer;
+      display: grid;
+      place-content: center;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .task-checkbox:hover {
+      border-color: var(--accent);
+    }
+
+    .task-checkbox:checked {
+      background-color: var(--success);
+      border-color: var(--success);
+    }
+
+    .task-checkbox:checked::after {
+      content: "";
+      width: 11px;
+      height: 6px;
+      border-left: 2.3px solid #ffffff;
+      border-bottom: 2.3px solid #ffffff;
+      transform: rotate(-45deg) translate(1px, -1px);
+    }
+
+    .task-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .task-title {
+      margin: 0 0 8px;
+      font-size: 0.96rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      word-break: break-word;
+      line-height: 1.4;
+    }
+
+    .task-item.completed .task-title {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .task-badges {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 9px;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      line-height: 1.3;
+      max-width: 100%;
+    }
+
+    .badge-clickable {
+      cursor: pointer;
+      transition: transform 0.1s ease, filter 0.15s ease;
+    }
+
+    .badge-clickable:hover {
+      filter: brightness(0.95);
+      transform: translateY(-1px);
+    }
+
+    .badge-priority-hoog {
+      background-color: var(--danger-soft);
+      color: var(--danger-text);
+      border-color: var(--danger-border);
+    }
+
+    .badge-priority-gemiddeld {
+      background-color: var(--warning-soft);
+      color: var(--warning-text);
+      border-color: var(--warning-border);
+    }
+
+    .badge-priority-laag {
+      background-color: var(--success-soft);
+      color: var(--success-text);
+      border-color: var(--success-border);
+    }
+
+    .badge-category {
+      background-color: var(--bg-subtle);
+      color: var(--text-secondary);
+      border-color: var(--border-color);
+    }
+
+    .task-item.completed .badge-category {
+      background-color: var(--bg-surface);
+    }
+
+    .badge-deadline {
+      background-color: var(--bg-subtle);
+      color: var(--text-secondary);
+      border-color: var(--border-color);
+    }
+
+    .badge-deadline-today {
+      background-color: var(--warning-soft);
+      color: var(--warning-text);
+      border-color: var(--warning-border);
+    }
+
+    .badge-deadline-overdue {
+      background-color: var(--danger-soft);
+      color: var(--danger-text);
+      border-color: var(--danger-border);
+    }
+
+    .badge-recurrence {
+      background-color: var(--accent-soft);
+      color: var(--accent-soft-text);
+      border-color: var(--accent-soft-border);
+    }
+
+    .badge-person {
+      background-color: var(--person-soft);
+      color: var(--person-text);
+      border-color: var(--person-border);
+    }
+
+    .badge-person svg {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+    }
+
+    .badge-tag {
+      background-color: var(--tag-soft);
+      color: var(--tag-text);
+      border-color: var(--tag-border);
+    }
+
+    .badge-completed-date {
+      background-color: var(--success-soft);
+      color: var(--success-text);
+      border-color: var(--success-border);
+      font-weight: 500;
+    }
+
+    .task-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .task-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 9px;
+      min-width: 38px;
+      min-height: 38px;
+      border-radius: var(--radius-sm);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .task-action-btn:hover {
+      background-color: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .task-action-btn.delete:hover {
+      background-color: var(--danger-soft);
+      color: var(--danger-text);
+    }
+
+    .task-action-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* =====================================================================
+       Lege staten
+       ===================================================================== */
+    .empty-state {
+      text-align: center;
+      padding: 30px 18px;
+      background-color: var(--bg-subtle);
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius-lg);
+      color: var(--text-muted);
+    }
+
+    .empty-state-icon {
+      width: 38px;
+      height: 38px;
+      margin: 0 auto 10px;
+      color: var(--text-muted);
+      opacity: 0.65;
+    }
+
+    .empty-state h3 {
+      margin: 0 0 5px;
+      font-size: 0.98rem;
+      color: var(--text-primary);
+    }
+
+    .empty-state p {
+      margin: 0;
+      font-size: 0.86rem;
+    }
+
+    /* =====================================================================
+       Modals (90dvh, safe-area padding, soepel intern scrollen op iOS)
+       ===================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background-color: rgba(15, 23, 42, 0.58);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: calc(14px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-dialog {
+      width: 100%;
+      max-width: 560px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 20px;
+      max-height: 90dvh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      animation: modalFadeIn 0.16s ease-out;
+    }
+
+    .modal-dialog.modal-sm {
+      max-width: 420px;
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .modal-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .import-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .helper-text {
+      margin: 0;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+    }
+
+    .live-counter {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .checkbox-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      user-select: none;
+      min-height: 36px;
+    }
+
+    .checkbox-inline input[type="checkbox"] {
+      width: 19px;
+      height: 19px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .divider {
+      border: 0;
+      border-top: 1px solid var(--border-color);
+      margin: 4px 0;
+    }
+
+    .summary-box {
+      padding: 14px;
+      border-radius: var(--radius-md);
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      font-size: 0.92rem;
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .import-meta-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    /* =====================================================================
+       Toast-meldingen (Safe-Area onderaan voor iPhone Home Indicator)
+       ===================================================================== */
+    .toast-container {
+      position: fixed;
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1200;
+      width: calc(100% - 28px - env(safe-area-inset-left) - env(safe-area-inset-right));
+      max-width: 540px;
+      pointer-events: none;
+      display: flex;
+      justify-content: center;
+    }
+
+    .toast {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background-color: #0f172a;
+      color: #f8fafc;
+      padding: 12px 15px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      font-size: 0.88rem;
+      font-weight: 500;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      animation: toastSlideUp 0.2s ease-out;
+      width: 100%;
+    }
+
+    html.dark .toast {
+      background-color: #1e293b;
+      border-color: #3d4f6b;
+    }
+
+    .toast.toast-error {
+      background-color: #991b1b;
+      border-color: #ef4444;
+    }
+
+    @keyframes toastSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .toast-undo-btn {
+      background-color: rgba(255, 255, 255, 0.16);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      min-height: 36px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 0.15s ease;
+    }
+
+    .toast-undo-btn:hover {
+      background-color: rgba(255, 255, 255, 0.26);
+    }
+
+    /* =====================================================================
+       Mobiele / iPhone-specifieke verfijningen (<= 768px)
+       ===================================================================== */
+    @media (max-width: 768px) {
+      /* Voorkom iOS automatisch inzoomen op invoervelden bij focus */
+      input,
+      select,
+      textarea,
+      .form-input,
+      .form-select,
+      .form-textarea,
+      .filter-dropdowns .form-select {
+        font-size: 16px !important;
+        min-height: 44px;
+      }
+
+      /* Ruime touch-targets van minstens 44px hoog op mobiel */
+      .btn,
+      .add-person-mini-btn,
+      .segment-btn,
+      .collapse-toggle-btn,
+      .task-action-btn {
+        min-height: 44px;
+      }
+
+      .btn-icon,
+      .task-action-btn {
+        min-width: 44px;
+      }
+
+      .header-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        width: 100%;
+      }
+
+      .header-actions #theme-toggle-btn {
+        grid-column: span 2;
+      }
+
+      .segmented-control {
+        width: 100%;
+      }
+
+      .segment-btn {
+        flex: 1 1 auto;
+        padding: 8px 10px;
+        font-size: 0.83rem;
+      }
+
+      .backup-reminder-actions .btn,
+      .modal-footer .btn {
+        flex: 1 1 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Gedeelde auto-suggestielijst voor eerder gebruikte tags -->
+  <datalist id="tags-datalist"></datalist>
+
+  <div class="app-container">
+    <!-- =================================================================
+         Header met NextGen Journalism-logo, titel, datum en actieknoppen
+         ================================================================= -->
+    <header class="app-header">
+      <div class="brand-group">
+        <!-- Afgeronde witte badge met inline SVG van NextGen Journalism -->
+        <div class="brand-badge" aria-label="NextGen Journalism logo">
+          <svg
+            class="brand-logo-svg"
+            viewBox="0 0 220 105"
+            xmlns="http://www.w3.org/2000/svg"
+            role="img"
+            aria-label="NextGen Journalism"
+          >
+            <!-- Lichtgrijs vergrootglas op de achtergrond -->
+            <circle cx="98" cy="46" r="34" fill="none" stroke="#d8dde4" stroke-width="7" />
+            <line x1="123" y1="71" x2="149" y2="97" stroke="#d8dde4" stroke-width="10" stroke-linecap="round" />
+            <!-- Subtiele schreefletter C in het vergrootglas -->
+            <text
+              x="98"
+              y="62"
+              text-anchor="middle"
+              font-family="Georgia, 'Times New Roman', serif"
+              font-size="48"
+              font-weight="400"
+              fill="#d8dde4"
+            >C</text>
+            <!-- Donkerblauwe schreefletters NextGen boven Journalism -->
+            <text
+              x="108"
+              y="47"
+              text-anchor="middle"
+              font-family="Georgia, 'Times New Roman', serif"
+              font-size="31"
+              font-weight="600"
+              letter-spacing="-0.4"
+              fill="#0a2240"
+            >NextGen</text>
+            <text
+              x="108"
+              y="76"
+              text-anchor="middle"
+              font-family="Georgia, 'Times New Roman', serif"
+              font-size="31"
+              font-weight="600"
+              letter-spacing="-0.4"
+              fill="#0a2240"
+            >Journalism</text>
+            <!-- Sierlijke donkerblauwe krul eronder -->
+            <path
+              d="M48 91 C76 101, 126 83, 162 87 C171 88, 171 95, 163 95"
+              fill="none"
+              stroke="#0a2240"
+              stroke-width="3.2"
+              stroke-linecap="round"
+            />
+          </svg>
+        </div>
+
+        <div class="brand-titles">
+          <h1 class="app-title">Takenlijst</h1>
+          <p id="current-date" class="app-date"></p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" id="open-text-import-btn" class="btn btn-secondary" title="Gewone tekstregels importeren">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="8" y1="13" x2="16" y2="13"></line>
+            <line x1="8" y1="17" x2="13" y2="17"></line>
+          </svg>
+          <span>Tekst importeren</span>
+        </button>
+
+        <button type="button" id="export-json-btn" class="btn btn-secondary" title="Back-up downloaden als JSON">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Exporteer JSON</span>
+        </button>
+
+        <button type="button" id="import-json-btn" class="btn btn-secondary" title="JSON-back-up inladen of samenvoegen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <span>Importeer JSON</span>
+        </button>
+        <input type="file" id="json-file-input" accept=".json,application/json" class="hidden" />
+
+        <button type="button" id="theme-toggle-btn" class="btn btn-secondary btn-icon" aria-label="Schakel licht of donker thema" title="Schakel licht/donker thema">
+          <svg id="icon-sun" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <span class="sr-only">Thema wisselen</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- =================================================================
+         Subtiele Back-upstatusbalk (Apparaat, 25-wijzigingenteller, Auto-export)
+         ================================================================= -->
+    <section class="backup-status-bar" aria-label="Back-upstatus en apparaatinstelling">
+      <div class="backup-status-left">
+        <span id="device-badge" class="device-pill" title="Gedetecteerd apparaat voor herkenbare back-upbestanden">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+          <span id="device-badge-text">Apparaat: Desktop</span>
+        </span>
+
+        <div class="backup-counter-wrap">
+          <div class="backup-mini-track" aria-hidden="true">
+            <div id="backup-mini-fill" class="backup-mini-fill"></div>
+          </div>
+          <span id="backup-changes-text">0/25 wijzigingen sinds back-up</span>
+        </div>
+
+        <span id="backup-last-date" class="backup-meta-text">Nog geen back-up</span>
+      </div>
+
+      <div class="backup-toggle-wrap">
+        <label
+          class="switch-label"
+          for="auto-export-toggle"
+          title="Op desktop start de download automatisch bij 25 wijzigingen; op iPhone verschijnt altijd een bevestiging/herinnering."
+        >
+          <input type="checkbox" id="auto-export-toggle" class="switch-input" />
+          <span>Auto-export bij 25 wijzigingen</span>
+        </label>
+        <span
+          class="info-hint-icon"
+          title="Op desktop start de JSON-download direct bij 25 wijzigingen. Op iPhone/mobiel vraagt Safari altijd om bevestiging en toont de app daarom ook een duidelijke herinneringsbalk."
+          aria-label="Uitleg over automatische export op desktop en iPhone"
+        >?</span>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         Opvallende Back-up- & Samenvoegherinneringsbalk (Desktop + iPhone)
+         ================================================================= -->
+    <section
+      id="backup-reminder-banner"
+      class="backup-reminder-banner hidden"
+      role="region"
+      aria-live="polite"
+      aria-labelledby="backup-reminder-title"
+    >
+      <div class="backup-reminder-top">
+        <svg class="backup-reminder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <div class="backup-reminder-content">
+          <h2 id="backup-reminder-title" class="backup-reminder-title">Tijd voor een back-up &amp; synchronisatie-check</h2>
+          <p id="backup-reminder-text" class="backup-reminder-text">
+            Je hebt 25+ wijzigingen gemaakt (of je laatste back-up is ouder dan 7 dagen). Vergeet niet dat je back-ups op twee plekken hebt staan (<strong>desktop</strong> en <strong>iPhone</strong>) — voeg ze af en toe samen via <strong>Importeer JSON → Samenvoegen</strong> zodat beide apparaten up-to-date blijven.
+          </p>
+        </div>
+      </div>
+      <div class="backup-reminder-actions">
+        <button type="button" id="banner-backup-now-btn" class="btn btn-warning btn-compact">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Nu back-up downloaden</span>
+        </button>
+
+        <button type="button" id="banner-import-merge-btn" class="btn btn-secondary btn-compact">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <span>Importeer &amp; voeg samen</span>
+        </button>
+
+        <button type="button" id="banner-snooze-btn" class="btn btn-ghost btn-compact">
+          <span>Later herinneren</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         Voortgangsbalk
+         ================================================================= -->
+    <section class="card" aria-label="Voortgang">
+      <div class="progress-header">
+        <span class="progress-label">Voortgang</span>
+        <span id="progress-text" class="progress-stats">0 totaal · 0 actief · 0 afgerond (0%)</span>
+      </div>
+      <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress-bar-container">
+        <div id="progress-fill" class="progress-fill"></div>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         Formulier voor nieuwe taak (inclusief Bespreken met & handmatige tags)
+         ================================================================= -->
+    <section class="card" aria-label="Nieuwe taak toevoegen">
+      <form id="task-form" novalidate>
+        <div class="add-task-top">
+          <label for="task-title" class="sr-only">Taakomschrijving</label>
+          <input
+            type="text"
+            id="task-title"
+            class="form-input"
+            placeholder="Wat moet er gebeuren? (bijv. Nieuwe podcast-opzet doornemen)"
+            required
+            autocomplete="off"
+          />
+          <button type="submit" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Taak toevoegen</span>
+          </button>
+        </div>
+
+        <div class="form-grid-5">
+          <div>
+            <label for="task-priority" class="form-label">Prioriteit</label>
+            <select id="task-priority" class="form-select">
+              <option value="Laag">Laag</option>
+              <option value="Gemiddeld" selected>Gemiddeld</option>
+              <option value="Hoog">Hoog</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="task-category" class="form-label">Categorie</label>
+            <select id="task-category" class="form-select">
+              <option value="Persoonlijk" selected>Persoonlijk</option>
+              <option value="Werk">Werk</option>
+              <option value="Studie">Studie</option>
+              <option value="Boodschappen">Boodschappen</option>
+              <option value="Gezondheid">Gezondheid</option>
+              <option value="Overig">Overig</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="task-person" class="form-label">Bespreken met</label>
+            <div class="person-select-row">
+              <select id="task-person" class="form-select" data-person-select></select>
+              <button
+                type="button"
+                class="add-person-mini-btn"
+                data-add-person-target="task-person"
+                title="Nieuwe naam toevoegen"
+                aria-label="Nieuwe persoon toevoegen"
+              >+</button>
+            </div>
+          </div>
+
+          <div>
+            <label for="task-deadline" class="form-label">Deadline (optioneel)</label>
+            <input type="date" id="task-deadline" class="form-input" />
+          </div>
+
+          <div>
+            <label for="task-recurrence" class="form-label">Herhaling</label>
+            <select id="task-recurrence" class="form-select">
+              <option value="none" selected>Geen (Eenmalig)</option>
+              <option value="daily">Dagelijks</option>
+              <option value="weekdays">Werkdagen (Ma t/m vr)</option>
+              <option value="weekly">Wekelijks</option>
+              <option value="monthly">Maandelijks</option>
+              <option value="yearly">Jaarlijks</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Handmatige tags invoer -->
+        <div class="tag-editor-box">
+          <label for="task-tag-input" class="form-label">Eigen tags (optioneel — druk op Enter, komma of klik op + Voeg tag toe)</label>
+          <div class="tag-input-row">
+            <input
+              type="text"
+              id="task-tag-input"
+              class="form-input"
+              list="tags-datalist"
+              placeholder="Bijv. redactie, podcast, dringend, nieuwsbrief..."
+              autocomplete="off"
+            />
+            <button type="button" id="task-tag-add-btn" class="btn btn-secondary btn-compact">+ Voeg tag toe</button>
+          </div>
+          <div id="task-tag-chips" class="tag-chips-list" aria-live="polite"></div>
+        </div>
+      </form>
+    </section>
+
+    <!-- =================================================================
+         Zoek- en Filterbalk
+         ================================================================= -->
+    <section class="filters-card" aria-label="Zoeken en filteren">
+      <div class="search-row">
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="text"
+            id="search-input"
+            class="form-input search-input"
+            placeholder="Zoek op taaktekst, persoon of #tags..."
+            aria-label="Zoek taken"
+            autocomplete="off"
+          />
+          <button type="button" id="clear-search-btn" class="search-clear-btn hidden" aria-label="Zoekopdracht wissen">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <button type="button" id="reset-filters-btn" class="btn btn-secondary btn-compact hidden">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+          <span>Filters wissen</span>
+        </button>
+      </div>
+
+      <div class="filter-dropdowns">
+        <select id="filter-category" class="form-select" aria-label="Filter op categorie">
+          <option value="Alle">Alle categorieën</option>
+          <option value="Persoonlijk">Persoonlijk</option>
+          <option value="Werk">Werk</option>
+          <option value="Studie">Studie</option>
+          <option value="Boodschappen">Boodschappen</option>
+          <option value="Gezondheid">Gezondheid</option>
+          <option value="Overig">Overig</option>
+        </select>
+
+        <select id="filter-priority" class="form-select" aria-label="Filter op prioriteit">
+          <option value="Alle">Alle prioriteiten</option>
+          <option value="Hoog">Hoog</option>
+          <option value="Gemiddeld">Gemiddeld</option>
+          <option value="Laag">Laag</option>
+        </select>
+
+        <select id="filter-recurrence" class="form-select" aria-label="Filter op herhaling">
+          <option value="Alle">Alle herhalingen</option>
+          <option value="Terugkerend">Terugkerend</option>
+          <option value="Eenmalig">Eenmalig</option>
+        </select>
+
+        <select id="filter-person" class="form-select" aria-label="Filter op persoon (Bespreken met)"></select>
+
+        <select id="filter-tag" class="form-select" aria-label="Filter op handmatige tag"></select>
+      </div>
+    </section>
+
+    <main>
+      <!-- =================================================================
+           SECTIE 1: Actieve taken (Op deadline, Op prioriteit, Per categorie, Op naam, Nieuwste eerst)
+           ================================================================= -->
+      <section id="active-section" class="section-card" aria-labelledby="active-tasks-heading">
+        <div class="section-card-header">
+          <div class="section-header-top">
+            <div class="section-title-group">
+              <h2 id="active-tasks-heading" class="section-title">Actieve taken</h2>
+              <span id="active-count-badge" class="count-pill">0</span>
+            </div>
+          </div>
+
+          <div class="group-controls-row">
+            <span class="group-controls-label">Rangschik actieve taken:</span>
+            <div class="segmented-control" role="group" aria-label="Rangschikking actieve taken">
+              <button type="button" class="segment-btn active" data-active-sort="deadline" aria-pressed="true">
+                <span>Op deadline</span>
+              </button>
+              <button type="button" class="segment-btn" data-active-sort="priority" aria-pressed="false">
+                <span>Op prioriteit</span>
+              </button>
+              <button type="button" class="segment-btn" data-active-sort="category" aria-pressed="false">
+                <span>Per categorie</span>
+              </button>
+              <button type="button" class="segment-btn" data-active-sort="name" aria-pressed="false">
+                <span>Op naam</span>
+              </button>
+              <button type="button" class="segment-btn" data-active-sort="newest" aria-pressed="false">
+                <span>Nieuwste eerst</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card-body">
+          <div id="active-groups-container" class="task-groups-wrapper"></div>
+
+          <div id="active-empty-state" class="empty-state hidden">
+            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 11l3 3L22 4"></path>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+            <h3 id="active-empty-title">Geen actieve taken</h3>
+            <p id="active-empty-desc">Voeg hierboven een nieuwe taak toe of importeer een lijstje.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           SECTIE 2: Aparte, inklapbare sectie voor Afgeronde taken
+           ================================================================= -->
+      <section id="completed-section" class="section-card" aria-labelledby="completed-tasks-heading">
+        <div class="section-card-header">
+          <div class="section-header-top">
+            <button
+              type="button"
+              id="toggle-completed-btn"
+              class="collapse-toggle-btn"
+              aria-expanded="true"
+              aria-controls="completed-card-body"
+            >
+              <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+              <h2 id="completed-tasks-heading" class="section-title">Afgeronde taken</h2>
+              <span id="completed-count-badge" class="count-pill count-pill-success">0</span>
+            </button>
+
+            <div class="section-header-actions">
+              <button type="button" id="clear-completed-btn" class="btn btn-danger-soft hidden">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                </svg>
+                <span>Wis afgeronde</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="group-controls-row">
+            <span class="group-controls-label">Rangschik afgeronde taken:</span>
+            <div class="segmented-control" role="group" aria-label="Rangschikking afgeronde taken">
+              <button type="button" class="segment-btn active" data-completed-group="month" aria-pressed="true">
+                <span>Per maand</span>
+              </button>
+              <button type="button" class="segment-btn" data-completed-group="category" aria-pressed="false">
+                <span>Per categorie</span>
+              </button>
+              <button type="button" class="segment-btn" data-completed-group="priority" aria-pressed="false">
+                <span>Op prioriteit</span>
+              </button>
+              <button type="button" class="segment-btn" data-completed-group="name" aria-pressed="false">
+                <span>Op naam</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="completed-card-body" class="section-card-body">
+          <div id="completed-groups-container" class="task-groups-wrapper"></div>
+
+          <div id="completed-empty-state" class="empty-state hidden">
+            <h3 id="completed-empty-title">Nog geen afgeronde taken</h3>
+            <p id="completed-empty-desc">Zodra je een taak afvinkt, verschijnt deze automatisch in dit overzicht.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===================================================================
+       MODAL 1: Taak bewerken
+       =================================================================== -->
+  <div id="edit-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 id="edit-modal-title" class="modal-title">Taak bewerken</h2>
+        <button type="button" class="btn btn-ghost" data-close-modal="edit-modal" aria-label="Sluiten">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form id="edit-form" novalidate>
+        <input type="hidden" id="edit-id" />
+        <div class="modal-body">
+          <div>
+            <label for="edit-title" class="form-label">Taak</label>
+            <input type="text" id="edit-title" class="form-input" required />
+          </div>
+
+          <div class="form-grid-2">
+            <div>
+              <label for="edit-priority" class="form-label">Prioriteit</label>
+              <select id="edit-priority" class="form-select">
+                <option value="Laag">Laag</option>
+                <option value="Gemiddeld">Gemiddeld</option>
+                <option value="Hoog">Hoog</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="edit-category" class="form-label">Categorie</label>
+              <select id="edit-category" class="form-select">
+                <option value="Persoonlijk">Persoonlijk</option>
+                <option value="Werk">Werk</option>
+                <option value="Studie">Studie</option>
+                <option value="Boodschappen">Boodschappen</option>
+                <option value="Gezondheid">Gezondheid</option>
+                <option value="Overig">Overig</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div>
+              <label for="edit-person" class="form-label">Bespreken met</label>
+              <div class="person-select-row">
+                <select id="edit-person" class="form-select" data-person-select></select>
+                <button
+                  type="button"
+                  class="add-person-mini-btn"
+                  data-add-person-target="edit-person"
+                  title="Nieuwe naam toevoegen"
+                  aria-label="Nieuwe persoon toevoegen"
+                >+</button>
+              </div>
+            </div>
+
+            <div>
+              <label for="edit-deadline" class="form-label">Deadline (optioneel)</label>
+              <input type="date" id="edit-deadline" class="form-input" />
+            </div>
+          </div>
+
+          <div>
+            <label for="edit-recurrence" class="form-label">Herhaling</label>
+            <select id="edit-recurrence" class="form-select">
+              <option value="none">Geen (Eenmalig)</option>
+              <option value="daily">Dagelijks</option>
+              <option value="weekdays">Werkdagen (Ma t/m vr)</option>
+              <option value="weekly">Wekelijks</option>
+              <option value="monthly">Maandelijks</option>
+              <option value="yearly">Jaarlijks</option>
+            </select>
+          </div>
+
+          <div class="tag-editor-box">
+            <label for="edit-tag-input" class="form-label">Eigen tags</label>
+            <div class="tag-input-row">
+              <input
+                type="text"
+                id="edit-tag-input"
+                class="form-input"
+                list="tags-datalist"
+                placeholder="Typ een tag en druk op Enter of komma..."
+                autocomplete="off"
+              />
+              <button type="button" id="edit-tag-add-btn" class="btn btn-secondary btn-compact">+ Voeg tag toe</button>
+            </div>
+            <div id="edit-tag-chips" class="tag-chips-list" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="edit-modal">Annuleren</button>
+          <button type="submit" class="btn btn-primary">Wijzigingen opslaan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL 2: Tekstregels importeren (Bulk-import)
+       =================================================================== -->
+  <div id="text-import-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="text-import-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 id="text-import-modal-title" class="modal-title">Tekstregels importeren</h2>
+        <button type="button" class="btn btn-ghost" data-close-modal="text-import-modal" aria-label="Sluiten">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form id="text-import-form" novalidate>
+        <div class="modal-body">
+          <div class="import-toolbar">
+            <p class="helper-text">Plak één taak per regel. Lijsttekens (-, *, •, 1., 2), [ ]) worden automatisch opgeschoond.</p>
+            <div>
+              <button type="button" id="load-txt-file-btn" class="btn btn-secondary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <span>.txt / .md inladen</span>
+              </button>
+              <input type="file" id="txt-file-input" accept=".txt,.md,text/plain,text/markdown" class="hidden" />
+            </div>
+          </div>
+
+          <div>
+            <label for="text-import-area" class="sr-only">Te importeren tekstregels</label>
+            <textarea
+              id="text-import-area"
+              class="form-textarea"
+              placeholder="- Bronnen checken voor artikel&#10;* Interview uitwerken&#10;1. Redactievergadering voorbereiden&#10;- [x] Introductie geschreven"
+            ></textarea>
+          </div>
+
+          <div class="import-toolbar">
+            <label class="checkbox-inline">
+              <input type="checkbox" id="text-import-detect-done" checked />
+              <span>Regels met [x] direct als afgerond markeren</span>
+            </label>
+            <span id="text-import-counter" class="live-counter">0 taken klaar om te importeren</span>
+          </div>
+
+          <hr class="divider" />
+
+          <div class="form-grid-2">
+            <div>
+              <label for="text-import-priority" class="form-label">Standaard prioriteit</label>
+              <select id="text-import-priority" class="form-select">
+                <option value="Laag">Laag</option>
+                <option value="Gemiddeld" selected>Gemiddeld</option>
+                <option value="Hoog">Hoog</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="text-import-category" class="form-label">Standaard categorie</label>
+              <select id="text-import-category" class="form-select">
+                <option value="Persoonlijk" selected>Persoonlijk</option>
+                <option value="Werk">Werk</option>
+                <option value="Studie">Studie</option>
+                <option value="Boodschappen">Boodschappen</option>
+                <option value="Gezondheid">Gezondheid</option>
+                <option value="Overig">Overig</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="text-import-person" class="form-label">Standaard bespreken met</label>
+              <div class="person-select-row">
+                <select id="text-import-person" class="form-select" data-person-select></select>
+                <button
+                  type="button"
+                  class="add-person-mini-btn"
+                  data-add-person-target="text-import-person"
+                  title="Nieuwe naam toevoegen"
+                  aria-label="Nieuwe persoon toevoegen"
+                >+</button>
+              </div>
+            </div>
+
+            <div>
+              <label for="text-import-deadline" class="form-label">Standaard deadline (optioneel)</label>
+              <input type="date" id="text-import-deadline" class="form-input" />
+            </div>
+          </div>
+
+          <div>
+            <label for="text-import-recurrence" class="form-label">Standaard herhaling</label>
+            <select id="text-import-recurrence" class="form-select">
+              <option value="none" selected>Geen (Eenmalig)</option>
+              <option value="daily">Dagelijks</option>
+              <option value="weekdays">Werkdagen (Ma t/m vr)</option>
+              <option value="weekly">Wekelijks</option>
+              <option value="monthly">Maandelijks</option>
+              <option value="yearly">Jaarlijks</option>
+            </select>
+          </div>
+
+          <div class="tag-editor-box">
+            <label for="text-import-tag-input" class="form-label">Standaard eigen tags (optioneel, komma-gescheiden of Enter)</label>
+            <div class="tag-input-row">
+              <input
+                type="text"
+                id="text-import-tag-input"
+                class="form-input"
+                list="tags-datalist"
+                placeholder="Bijv. redactie, planning..."
+                autocomplete="off"
+              />
+              <button type="button" id="text-import-tag-add-btn" class="btn btn-secondary btn-compact">+ Voeg tag toe</button>
+            </div>
+            <div id="text-import-tag-chips" class="tag-chips-list" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="text-import-modal">Annuleren</button>
+          <button type="submit" id="text-import-submit-btn" class="btn btn-primary" disabled>Importeren</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL 3: JSON-import bevestigen (inclusief Bronapparaat voor Desktop + iPhone)
+       =================================================================== -->
+  <div id="json-import-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="json-import-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 id="json-import-modal-title" class="modal-title">JSON-back-up importeren</h2>
+        <button type="button" class="btn btn-ghost" data-close-modal="json-import-modal" aria-label="Sluiten">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="summary-box">
+          <div id="json-import-summary">Er zijn 0 geldige taken gevonden in dit bestand.</div>
+          <div id="json-import-meta" class="import-meta-badges"></div>
+        </div>
+        <p class="helper-text">
+          Kies hoe je deze back-up wilt inladen. Gebruik <strong>Samenvoegen op basis van ID</strong> om wijzigingen van je <strong>desktop</strong> en <strong>iPhone</strong> veilig te combineren zonder taken te verliezen. Bij <strong>Huidige lijst vervangen</strong> wordt je huidige lijst volledig overschreven.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="json-import-modal">Annuleren</button>
+        <button type="button" id="json-replace-btn" class="btn btn-danger">Huidige lijst vervangen</button>
+        <button type="button" id="json-merge-btn" class="btn btn-primary">Samenvoegen op ID (aanbevolen)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL 4: Bevestiging voor 'Wis afgeronde'
+       =================================================================== -->
+  <div id="clear-completed-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="clear-completed-modal-title">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-header">
+        <h2 id="clear-completed-modal-title" class="modal-title">Afgeronde taken wissen</h2>
+        <button type="button" class="btn btn-ghost" data-close-modal="clear-completed-modal" aria-label="Sluiten">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div id="clear-completed-summary" class="summary-box">
+          Weet je zeker dat je alle afgeronde taken wilt verwijderen?
+        </div>
+        <p class="helper-text">
+          Na het wissen kun je deze actie direct terugdraaien via <strong>Ongedaan maken</strong> in de melding onderaan.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="clear-completed-modal">Annuleren</button>
+        <button type="button" id="confirm-clear-completed-btn" class="btn btn-danger">Ja, wis afgeronde taken</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL 5: Nieuwe persoon toevoegen aan 'Bespreken met'
+       =================================================================== -->
+  <div id="add-person-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="add-person-modal-title">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-header">
+        <h2 id="add-person-modal-title" class="modal-title">Persoon toevoegen</h2>
+        <button type="button" class="btn btn-ghost" data-close-modal="add-person-modal" aria-label="Sluiten">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form id="add-person-form" novalidate>
+        <div class="modal-body">
+          <div>
+            <label for="new-person-name" class="form-label">Naam van persoon</label>
+            <input
+              type="text"
+              id="new-person-name"
+              class="form-input"
+              placeholder="Bijv. Lisa of Mark"
+              required
+              autocomplete="off"
+            />
+          </div>
+          <p class="helper-text">
+            De naam wordt direct toegevoegd aan het keuzemenu <strong>Bespreken met</strong> en bewaard in je browser.
+          </p>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="add-person-modal">Annuleren</button>
+          <button type="submit" class="btn btn-primary">Toevoegen</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       Toast-container
+       =================================================================== -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      /* =====================================================================
+         Constanten & Opslagsleutels
+         ===================================================================== */
+      const STORAGE_KEY = 'nl_todo_tasks_v1';
+      const PEOPLE_KEY = 'nl_todo_people_v1';
+      const THEME_KEY = 'nl_todo_theme_v1';
+      const ACTIVE_SORT_KEY = 'nl_todo_active_sort_v1';
+      const COMPLETED_SORT_KEY = 'nl_todo_completed_sort_v1';
+      const LEGACY_COMPLETED_GROUP_KEY = 'nl_todo_completed_group_v1';
+      const BACKUP_META_KEY = 'nl_todo_backup_meta_v1';
+
+      const BACKUP_VERSION = 4;
+      const DEFAULT_CHANGE_THRESHOLD = 25;
+      const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+      const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+      const DEFAULT_PEOPLE = ['Tim', 'Tom', 'Thijmen', 'John'];
+
+      const VALID_PRIORITIES = ['Laag', 'Gemiddeld', 'Hoog'];
+      const PRIORITY_GROUP_ORDER = ['Hoog', 'Gemiddeld', 'Laag'];
+      const PRIORITY_RANK = { Hoog: 0, Gemiddeld: 1, Laag: 2 };
+
+      const VALID_CATEGORIES = ['Persoonlijk', 'Werk', 'Studie', 'Boodschappen', 'Gezondheid', 'Overig'];
+      const CATEGORY_GROUP_ORDER = ['Werk', 'Persoonlijk', 'Studie', 'Boodschappen', 'Gezondheid', 'Overig'];
+
+      const VALID_RECURRENCES = ['none', 'daily', 'weekdays', 'weekly', 'monthly', 'yearly'];
+      const VALID_ACTIVE_SORTS = ['deadline', 'priority', 'category', 'name', 'newest'];
+      const VALID_COMPLETED_GROUPS = ['month', 'category', 'priority', 'name'];
+
+      const RECURRENCE_LABELS = {
+        none: 'Geen',
+        daily: 'Dagelijks',
+        weekdays: 'Werkdagen',
+        weekly: 'Wekelijks',
+        monthly: 'Maandelijks',
+        yearly: 'Jaarlijks'
+      };
+
+      const DEVICE_LABELS = {
+        iphone: 'iPhone',
+        ipad: 'iPad',
+        mobiel: 'Mobiel',
+        desktop: 'Desktop'
+      };
+
+      /* =====================================================================
+         Apparaatdetectie (iPhone / iPad / Mobiel / Desktop)
+         ===================================================================== */
+      function detectDeviceInfo() {
+        const ua = navigator.userAgent || '';
+        const platform = navigator.platform || '';
+        const maxTouch = navigator.maxTouchPoints || 0;
+
+        if (/iPhone|iPod/i.test(ua)) {
+          return { slug: 'iphone', label: 'iPhone', isMobile: true };
+        }
+        if (/iPad/i.test(ua) || (platform === 'MacIntel' && maxTouch > 1)) {
+          return { slug: 'ipad', label: 'iPad', isMobile: true };
+        }
+        if (/Android|Mobile|BlackBerry|IEMobile|Opera Mini/i.test(ua)) {
+          return { slug: 'mobiel', label: 'Mobiel', isMobile: true };
+        }
+        return { slug: 'desktop', label: 'Desktop', isMobile: false };
+      }
+
+      const currentDevice = detectDeviceInfo();
+
+      /* =====================================================================
+         Applicatiestatus
+         ===================================================================== */
+      let tasks = [];
+      let people = [...DEFAULT_PEOPLE];
+
+      // Back-up & synchronisatie metadata
+      let backupMeta = {
+        changesSinceBackup: 0,
+        lastBackupAt: null,
+        lastMergeAt: null,
+        autoExportEnabled: !currentDevice.isMobile,
+        changeThreshold: DEFAULT_CHANGE_THRESHOLD,
+        reminderDismissedUntilChange: 0,
+        reminderSnoozedUntil: 0,
+        showPostAutoExportMergeReminder: false
+      };
+
+      // Filters
+      let categoryFilter = 'Alle';
+      let priorityFilter = 'Alle';
+      let recurrenceFilter = 'Alle';
+      let personFilter = 'Alle';
+      let tagFilter = 'Alle';
+      let searchQuery = '';
+
+      // Rangschikvoorkeuren
+      let activeSortBy = 'deadline';
+      let completedGroupBy = 'month';
+
+      // Inklapstatus van sectie Afgeronde taken
+      let isCompletedCollapsed = false;
+      let userToggledCompletedSection = false;
+
+      // Tijdelijke state voor tag-editors, modals & undo
+      let addFormTags = [];
+      let editFormTags = [];
+      let importFormTags = [];
+      let addPersonTargetSelectId = null;
+
+      let lastUndoAction = null;
+      let pendingJsonImport = null;
+      let toastTimer = null;
+      let cachedTouchIconDataUrl = '';
+      let manifestBlobUrl = null;
+
+      /* =====================================================================
+         DOM-referenties
+         ===================================================================== */
+      const themeColorMeta = document.getElementById('theme-color-meta');
+      const appleTouchIconLink = document.getElementById('apple-touch-icon');
+      const appManifestLink = document.getElementById('app-manifest');
+      const tagsDatalist = document.getElementById('tags-datalist');
+
+      const currentDateEl = document.getElementById('current-date');
+      const themeToggleBtn = document.getElementById('theme-toggle-btn');
+      const iconSun = document.getElementById('icon-sun');
+      const iconMoon = document.getElementById('icon-moon');
+
+      // Back-upstatusbalk & Herinneringsbalk
+      const deviceBadgeEl = document.getElementById('device-badge');
+      const deviceBadgeTextEl = document.getElementById('device-badge-text');
+      const backupMiniFillEl = document.getElementById('backup-mini-fill');
+      const backupChangesTextEl = document.getElementById('backup-changes-text');
+      const backupLastDateEl = document.getElementById('backup-last-date');
+      const autoExportToggleEl = document.getElementById('auto-export-toggle');
+
+      const backupReminderBannerEl = document.getElementById('backup-reminder-banner');
+      const backupReminderTitleEl = document.getElementById('backup-reminder-title');
+      const backupReminderTextEl = document.getElementById('backup-reminder-text');
+      const bannerBackupNowBtn = document.getElementById('banner-backup-now-btn');
+      const bannerImportMergeBtn = document.getElementById('banner-import-merge-btn');
+      const bannerSnoozeBtn = document.getElementById('banner-snooze-btn');
+
+      // Voortgang
+      const progressTextEl = document.getElementById('progress-text');
+      const progressFillEl = document.getElementById('progress-fill');
+      const progressBarContainer = document.getElementById('progress-bar-container');
+
+      // Nieuwe taak formulier
+      const taskForm = document.getElementById('task-form');
+      const taskTitleInput = document.getElementById('task-title');
+      const taskPrioritySelect = document.getElementById('task-priority');
+      const taskCategorySelect = document.getElementById('task-category');
+      const taskPersonSelect = document.getElementById('task-person');
+      const taskDeadlineInput = document.getElementById('task-deadline');
+      const taskRecurrenceSelect = document.getElementById('task-recurrence');
+      const taskTagInput = document.getElementById('task-tag-input');
+      const taskTagAddBtn = document.getElementById('task-tag-add-btn');
+      const taskTagChips = document.getElementById('task-tag-chips');
+
+      // Zoeken & Filters
+      const searchInput = document.getElementById('search-input');
+      const clearSearchBtn = document.getElementById('clear-search-btn');
+      const resetFiltersBtn = document.getElementById('reset-filters-btn');
+      const filterCategorySelect = document.getElementById('filter-category');
+      const filterPrioritySelect = document.getElementById('filter-priority');
+      const filterRecurrenceSelect = document.getElementById('filter-recurrence');
+      const filterPersonSelect = document.getElementById('filter-person');
+      const filterTagSelect = document.getElementById('filter-tag');
+
+      // Sectie 1: Actieve taken
+      const activeCountBadge = document.getElementById('active-count-badge');
+      const activeSortButtons = document.querySelectorAll('.segment-btn[data-active-sort]');
+      const activeGroupsContainer = document.getElementById('active-groups-container');
+      const activeEmptyStateEl = document.getElementById('active-empty-state');
+      const activeEmptyTitleEl = document.getElementById('active-empty-title');
+      const activeEmptyDescEl = document.getElementById('active-empty-desc');
+
+      // Sectie 2: Afgeronde taken
+      const completedSectionEl = document.getElementById('completed-section');
+      const toggleCompletedBtn = document.getElementById('toggle-completed-btn');
+      const completedCountBadge = document.getElementById('completed-count-badge');
+      const clearCompletedBtn = document.getElementById('clear-completed-btn');
+      const completedGroupButtons = document.querySelectorAll('.segment-btn[data-completed-group]');
+      const completedGroupsContainer = document.getElementById('completed-groups-container');
+      const completedEmptyStateEl = document.getElementById('completed-empty-state');
+      const completedEmptyTitleEl = document.getElementById('completed-empty-title');
+      const completedEmptyDescEl = document.getElementById('completed-empty-desc');
+
+      // Bewerkmodal
+      const editModal = document.getElementById('edit-modal');
+      const editForm = document.getElementById('edit-form');
+      const editIdInput = document.getElementById('edit-id');
+      const editTitleInput = document.getElementById('edit-title');
+      const editPrioritySelect = document.getElementById('edit-priority');
+      const editCategorySelect = document.getElementById('edit-category');
+      const editPersonSelect = document.getElementById('edit-person');
+      const editDeadlineInput = document.getElementById('edit-deadline');
+      const editRecurrenceSelect = document.getElementById('edit-recurrence');
+      const editTagInput = document.getElementById('edit-tag-input');
+      const editTagAddBtn = document.getElementById('edit-tag-add-btn');
+      const editTagChips = document.getElementById('edit-tag-chips');
+
+      // Tekst-importmodal
+      const openTextImportBtn = document.getElementById('open-text-import-btn');
+      const textImportModal = document.getElementById('text-import-modal');
+      const textImportForm = document.getElementById('text-import-form');
+      const textImportArea = document.getElementById('text-import-area');
+      const textImportDetectDone = document.getElementById('text-import-detect-done');
+      const textImportCounter = document.getElementById('text-import-counter');
+      const textImportPriority = document.getElementById('text-import-priority');
+      const textImportCategory = document.getElementById('text-import-category');
+      const textImportPerson = document.getElementById('text-import-person');
+      const textImportDeadline = document.getElementById('text-import-deadline');
+      const textImportRecurrence = document.getElementById('text-import-recurrence');
+      const textImportTagInput = document.getElementById('text-import-tag-input');
+      const textImportTagAddBtn = document.getElementById('text-import-tag-add-btn');
+      const textImportTagChips = document.getElementById('text-import-tag-chips');
+      const textImportSubmitBtn = document.getElementById('text-import-submit-btn');
+      const loadTxtFileBtn = document.getElementById('load-txt-file-btn');
+      const txtFileInput = document.getElementById('txt-file-input');
+
+      // JSON Export & Import
+      const exportJsonBtn = document.getElementById('export-json-btn');
+      const importJsonBtn = document.getElementById('import-json-btn');
+      const jsonFileInput = document.getElementById('json-file-input');
+      const jsonImportModal = document.getElementById('json-import-modal');
+      const jsonImportSummary = document.getElementById('json-import-summary');
+      const jsonImportMeta = document.getElementById('json-import-meta');
+      const jsonMergeBtn = document.getElementById('json-merge-btn');
+      const jsonReplaceBtn = document.getElementById('json-replace-btn');
+
+      // Wis afgeronde modal
+      const clearCompletedModal = document.getElementById('clear-completed-modal');
+      const clearCompletedSummary = document.getElementById('clear-completed-summary');
+      const confirmClearCompletedBtn = document.getElementById('confirm-clear-completed-btn');
+
+      // Persoon toevoegen modal
+      const addPersonModal = document.getElementById('add-person-modal');
+      const addPersonForm = document.getElementById('add-person-form');
+      const newPersonNameInput = document.getElementById('new-person-name');
+
+      // Toast
+      const toastContainer = document.getElementById('toast-container');
+
+      /* =====================================================================
+         iOS Apple Touch Icon (180x180 PNG via offscreen Canvas) & Manifest
+         ===================================================================== */
+      function generateIosTouchIconPng() {
+        try {
+          const size = 180;
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return '';
+
+          // 1. Strakke witte achtergrond (iOS rondt de hoeken zelf af)
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, size, size);
+
+          // 2. Lichtgrijs vergrootglas op de achtergrond
+          ctx.save();
+          ctx.strokeStyle = '#d8dde4';
+          ctx.lineCap = 'round';
+
+          ctx.lineWidth = 11;
+          ctx.beginPath();
+          ctx.arc(78, 76, 46, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.lineWidth = 15;
+          ctx.beginPath();
+          ctx.moveTo(111, 109);
+          ctx.lineTo(148, 146);
+          ctx.stroke();
+
+          // 3. Subtiele schreefletter C
+          ctx.fillStyle = '#e2e8f0';
+          ctx.font = '400 66px Georgia, "Times New Roman", serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('C', 78, 80);
+          ctx.restore();
+
+          // 4. Donkerblauwe schreefletters "NG"
+          ctx.save();
+          ctx.fillStyle = '#0a2240';
+          ctx.font = '700 60px Georgia, "Times New Roman", serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('NG', 88, 84);
+
+          // 5. Sierlijke donkerblauwe golf eronder
+          ctx.strokeStyle = '#0a2240';
+          ctx.lineWidth = 7;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(34, 132);
+          ctx.bezierCurveTo(64, 147, 108, 118, 140, 127);
+          ctx.bezierCurveTo(150, 130, 149, 139, 140, 139);
+          ctx.stroke();
+          ctx.restore();
+
+          return canvas.toDataURL('image/png');
+        } catch (err) {
+          console.warn('Kon Apple Touch Icon niet genereren:', err);
+          return '';
+        }
+      }
+
+      function updateWebAppManifest(isDark) {
+        try {
+          if (!cachedTouchIconDataUrl) {
+            cachedTouchIconDataUrl = generateIosTouchIconPng();
+            if (cachedTouchIconDataUrl && appleTouchIconLink) {
+              appleTouchIconLink.setAttribute('href', cachedTouchIconDataUrl);
+            }
+          }
+
+          const bgColor = isDark ? '#0f172a' : '#f8fafc';
+          const manifestObj = {
+            name: 'NextGen Journalism Takenlijst',
+            short_name: 'NGJ Taken',
+            description: 'Offline Nederlandse takenlijst voor NextGen Journalism',
+            start_url: '.',
+            display: 'standalone',
+            background_color: bgColor,
+            theme_color: bgColor,
+            icons: cachedTouchIconDataUrl
+              ? [
+                  {
+                    src: cachedTouchIconDataUrl,
+                    sizes: '180x180',
+                    type: 'image/png',
+                    purpose: 'any maskable'
+                  }
+                ]
+              : []
+          };
+
+          if (manifestBlobUrl) {
+            URL.revokeObjectURL(manifestBlobUrl);
+            manifestBlobUrl = null;
+          }
+
+          const blob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
+          manifestBlobUrl = URL.createObjectURL(blob);
+          if (appManifestLink) {
+            appManifestLink.setAttribute('href', manifestBlobUrl);
+          }
+        } catch (err) {
+          console.warn('Kon Web App Manifest niet bijwerken:', err);
+        }
+      }
+
+      /* =====================================================================
+         Hulpfuncties (ID, Datum, Escaping, Tags, Normalisatie)
+         ===================================================================== */
+      function generateId() {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+          return window.crypto.randomUUID();
+        }
+        return 'task_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
+      }
+
+      function formatDateYmd(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      function getRelativeYmd(daysOffset = 0) {
+        const dt = new Date();
+        dt.setHours(0, 0, 0, 0);
+        dt.setDate(dt.getDate() + daysOffset);
+        return formatDateYmd(dt);
+      }
+
+      function formatDateObjShortNl(date) {
+        if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+        return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+
+      function formatDateTimeShortNl(isoString) {
+        if (!isoString) return '';
+        const dt = new Date(isoString);
+        if (Number.isNaN(dt.getTime())) return '';
+        return dt.toLocaleDateString('nl-NL', {
+          day: 'numeric',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+
+      function formatDateShortNl(ymd) {
+        if (!ymd || !/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return '';
+        const [y, m, d] = ymd.split('-').map(Number);
+        return formatDateObjShortNl(new Date(y, m - 1, d));
+      }
+
+      function formatDateLongNl(ymd) {
+        if (!ymd || !/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return '';
+        const [y, m, d] = ymd.split('-').map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString('nl-NL', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+      }
+
+      function renderCurrentDate() {
+        currentDateEl.textContent = new Date().toLocaleDateString('nl-NL', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function sanitizeTag(raw) {
+        if (typeof raw !== 'string') return '';
+        return raw.replace(/^#+/, '').trim().replace(/\s+/g, ' ').slice(0, 32);
+      }
+
+      function normalizeTagsArray(rawTags) {
+        if (!Array.isArray(rawTags)) return [];
+        const seen = new Set();
+        const result = [];
+        rawTags.forEach((item) => {
+          const clean = sanitizeTag(item);
+          if (!clean) return;
+          const lower = clean.toLowerCase();
+          if (!seen.has(lower)) {
+            seen.add(lower);
+            result.push(clean);
+          }
+        });
+        return result;
+      }
+
+      function addTagsFromInputString(rawString, targetArray) {
+        if (!rawString || !rawString.trim()) return false;
+        const parts = rawString.split(',');
+        let addedAny = false;
+        const existingLower = new Set(targetArray.map((t) => t.toLowerCase()));
+
+        parts.forEach((part) => {
+          const clean = sanitizeTag(part);
+          if (!clean) return;
+          const lower = clean.toLowerCase();
+          if (!existingLower.has(lower)) {
+            existingLower.add(lower);
+            targetArray.push(clean);
+            addedAny = true;
+          }
+        });
+        return addedAny;
+      }
+
+      function getEffectiveCompletedDate(task) {
+        if (task.completedAt && typeof task.completedAt === 'string') {
+          const parsed = new Date(task.completedAt);
+          if (!Number.isNaN(parsed.getTime())) return parsed;
+        }
+        if (task.dueDate && /^\d{4}-\d{2}-\d{2}$/.test(task.dueDate)) {
+          const [y, m, d] = task.dueDate.split('-').map(Number);
+          const parsedDeadline = new Date(y, m - 1, d);
+          if (!Number.isNaN(parsedDeadline.getTime())) return parsedDeadline;
+        }
+        if (typeof task.createdAt === 'number' && !Number.isNaN(task.createdAt)) {
+          const parsedCreated = new Date(task.createdAt);
+          if (!Number.isNaN(parsedCreated.getTime())) return parsedCreated;
+        }
+        return null;
+      }
+
+      /**
+       * Normaliseert een taakobject (100% compatibel met v1, v2, v3 en v4):
+       * - 'Normaal' -> 'Gemiddeld', 'Privé' -> 'Persoonlijk'
+       */
+      function normalizeTask(raw) {
+        if (!raw || typeof raw !== 'object') return null;
+
+        const rawText = typeof raw.text === 'string' ? raw.text : typeof raw.title === 'string' ? raw.title : '';
+        const text = rawText.trim();
+        if (!text) return null;
+
+        let priority = raw.priority === 'Normaal' ? 'Gemiddeld' : raw.priority;
+        if (!VALID_PRIORITIES.includes(priority)) {
+          priority = 'Gemiddeld';
+        }
+
+        let category = raw.category === 'Privé' ? 'Persoonlijk' : raw.category;
+        if (!VALID_CATEGORIES.includes(category)) {
+          category = 'Overig';
+        }
+
+        const rawDue = typeof raw.dueDate === 'string' ? raw.dueDate : typeof raw.deadline === 'string' ? raw.deadline : '';
+        const dueDate = /^\d{4}-\d{2}-\d{2}$/.test(rawDue) ? rawDue : '';
+
+        const recurrence = VALID_RECURRENCES.includes(raw.recurrence) ? raw.recurrence : 'none';
+        const person = typeof raw.person === 'string' ? raw.person.trim() : '';
+        const tags = normalizeTagsArray(raw.tags);
+        const completed = Boolean(raw.completed);
+
+        let completedAt = null;
+        if (completed && typeof raw.completedAt === 'string' && raw.completedAt.trim()) {
+          const parsed = new Date(raw.completedAt);
+          if (!Number.isNaN(parsed.getTime())) {
+            completedAt = parsed.toISOString();
+          }
+        }
+
+        const createdAt =
+          typeof raw.createdAt === 'number' && !Number.isNaN(raw.createdAt)
+            ? raw.createdAt
+            : Date.now();
+
+        return {
+          id: typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : generateId(),
+          text,
+          completed,
+          createdAt,
+          completedAt,
+          priority,
+          category,
+          dueDate,
+          recurrence,
+          recurrenceSpawned: Boolean(raw.recurrenceSpawned),
+          person,
+          tags
+        };
+      }
+
+      /* =====================================================================
+         Back-upmetadata, 25-Wijzigingenteller & Desktop/iPhone Herinnering
+         ===================================================================== */
+      function loadBackupMeta() {
+        const defaults = {
+          changesSinceBackup: 0,
+          lastBackupAt: null,
+          lastMergeAt: null,
+          autoExportEnabled: !currentDevice.isMobile,
+          changeThreshold: DEFAULT_CHANGE_THRESHOLD,
+          reminderDismissedUntilChange: 0,
+          reminderSnoozedUntil: 0,
+          showPostAutoExportMergeReminder: false
+        };
+
+        try {
+          const raw = localStorage.getItem(BACKUP_META_KEY);
+          if (!raw) {
+            backupMeta = defaults;
+            return;
+          }
+          const parsed = JSON.parse(raw);
+          backupMeta = {
+            changesSinceBackup:
+              typeof parsed.changesSinceBackup === 'number' && parsed.changesSinceBackup >= 0
+                ? Math.floor(parsed.changesSinceBackup)
+                : 0,
+            lastBackupAt: typeof parsed.lastBackupAt === 'string' ? parsed.lastBackupAt : null,
+            lastMergeAt: typeof parsed.lastMergeAt === 'string' ? parsed.lastMergeAt : null,
+            autoExportEnabled:
+              typeof parsed.autoExportEnabled === 'boolean'
+                ? parsed.autoExportEnabled
+                : !currentDevice.isMobile,
+            changeThreshold:
+              typeof parsed.changeThreshold === 'number' && parsed.changeThreshold > 0
+                ? Math.floor(parsed.changeThreshold)
+                : DEFAULT_CHANGE_THRESHOLD,
+            reminderDismissedUntilChange:
+              typeof parsed.reminderDismissedUntilChange === 'number' ? parsed.reminderDismissedUntilChange : 0,
+            reminderSnoozedUntil:
+              typeof parsed.reminderSnoozedUntil === 'number' ? parsed.reminderSnoozedUntil : 0,
+            showPostAutoExportMergeReminder: Boolean(parsed.showPostAutoExportMergeReminder)
+          };
+        } catch (err) {
+          console.warn('Kan back-upmetadata niet laden:', err);
+          backupMeta = defaults;
+        }
+      }
+
+      function saveBackupMeta() {
+        try {
+          localStorage.setItem(BACKUP_META_KEY, JSON.stringify(backupMeta));
+        } catch (err) {
+          console.warn('Kan back-upmetadata niet opslaan:', err);
+        }
+      }
+
+      function renderDeviceBadge() {
+        deviceBadgeTextEl.textContent = `Apparaat: ${currentDevice.label}`;
+        const iconSvg = currentDevice.isMobile
+          ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>`
+          : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`;
+        deviceBadgeEl.innerHTML = `${iconSvg}<span id="device-badge-text">Apparaat: ${escapeHtml(currentDevice.label)}</span>`;
+      }
+
+      function isBackupOverdueByTime() {
+        if (tasks.length === 0) return false;
+        const now = Date.now();
+        if (backupMeta.lastBackupAt) {
+          const lastMs = new Date(backupMeta.lastBackupAt).getTime();
+          if (!Number.isNaN(lastMs) && now - lastMs > SEVEN_DAYS_MS) {
+            return true;
+          }
+          return false;
+        }
+        // Geen eerdere back-up: controleer of de oudste taak ouder is dan 7 dagen
+        const oldestTaskMs = tasks.reduce((min, t) => Math.min(min, t.createdAt || now), now);
+        return now - oldestTaskMs > SEVEN_DAYS_MS;
+      }
+
+      function renderBackupUi() {
+        const threshold = backupMeta.changeThreshold || DEFAULT_CHANGE_THRESHOLD;
+        const count = backupMeta.changesSinceBackup;
+        const pct = Math.min(100, Math.round((count / threshold) * 100));
+
+        backupChangesTextEl.textContent = `${count}/${threshold} wijzigingen sinds back-up`;
+        backupMiniFillEl.style.width = `${pct}%`;
+        backupMiniFillEl.classList.toggle('warn', count >= threshold);
+
+        const parts = [];
+        if (backupMeta.lastBackupAt) {
+          parts.push(`Laatste back-up: ${formatDateTimeShortNl(backupMeta.lastBackupAt)}`);
+        } else {
+          parts.push('Nog geen back-up');
+        }
+        if (backupMeta.lastMergeAt) {
+          parts.push(`Samengevoegd: ${formatDateTimeShortNl(backupMeta.lastMergeAt)}`);
+        }
+        backupLastDateEl.textContent = parts.join(' · ');
+
+        autoExportToggleEl.checked = Boolean(backupMeta.autoExportEnabled);
+
+        // Bepaal of de herinneringsbalk getoond moet worden
+        const now = Date.now();
+        const reachedChanges = count >= threshold;
+        const overdueByTime = isBackupOverdueByTime();
+        const snoozedByTime = backupMeta.reminderSnoozedUntil > now;
+        const snoozedByChanges = backupMeta.reminderDismissedUntilChange > 0 && count < backupMeta.reminderDismissedUntilChange;
+
+        if (backupMeta.showPostAutoExportMergeReminder) {
+          backupReminderBannerEl.classList.remove('hidden');
+          backupReminderBannerEl.classList.add('mode-merged-tip');
+          backupReminderTitleEl.textContent = 'Automatische back-up gestart — vergeet desktop & iPhone niet';
+          backupReminderTextEl.innerHTML =
+            'Je 25e wijziging heeft zojuist een JSON-back-up gestart voor <strong>' +
+            escapeHtml(currentDevice.label) +
+            '</strong>. Vergeet niet dat je back-ups op twee plekken hebt staan (<strong>desktop</strong> en <strong>iPhone</strong>) — voeg ze af en toe samen via <strong>Importeer JSON → Samenvoegen</strong> zodat beide apparaten up-to-date blijven.';
+          return;
+        }
+
+        backupReminderBannerEl.classList.remove('mode-merged-tip');
+
+        const shouldShowDueToChanges = reachedChanges && !snoozedByChanges;
+        const shouldShowDueToAge = overdueByTime && !snoozedByTime;
+
+        if (shouldShowDueToChanges || shouldShowDueToAge) {
+          backupReminderBannerEl.classList.remove('hidden');
+          backupReminderTitleEl.textContent = reachedChanges
+            ? `Tijd voor een back-up (${count} wijzigingen sinds laatste export)`
+            : 'Je laatste back-up is langer dan 7 dagen geleden';
+          backupReminderTextEl.innerHTML =
+            'Je hebt 25+ wijzigingen gemaakt (of je laatste back-up is ouder dan 7 dagen). Vergeet niet dat je back-ups op twee plekken hebt staan (<strong>desktop</strong> en <strong>iPhone</strong>) — voeg ze af en toe samen via <strong>Importeer JSON → Samenvoegen</strong> zodat beide apparaten up-to-date blijven.';
+        } else {
+          backupReminderBannerEl.classList.add('hidden');
+        }
+      }
+
+      /**
+       * Registreert één of meerdere mutaties.
+       * Als autoExportEnabled aan staat en de grens (25) wordt bereikt, start de download direct.
+       */
+      function registerMutation(delta = 1) {
+        const step = Math.max(1, Number(delta) || 1);
+        backupMeta.changesSinceBackup += step;
+        backupMeta.showPostAutoExportMergeReminder = false;
+
+        const threshold = backupMeta.changeThreshold || DEFAULT_CHANGE_THRESHOLD;
+
+        if (backupMeta.autoExportEnabled && backupMeta.changesSinceBackup >= threshold) {
+          saveBackupMeta();
+          exportJsonBackup({ isAuto: true });
+          return true;
+        }
+
+        saveBackupMeta();
+        renderBackupUi();
+        return false;
+      }
+
+      function snoozeBackupReminder() {
+        const now = Date.now();
+        backupMeta.showPostAutoExportMergeReminder = false;
+        backupMeta.reminderSnoozedUntil = now + ONE_DAY_MS;
+        backupMeta.reminderDismissedUntilChange = backupMeta.changesSinceBackup + 5;
+        saveBackupMeta();
+        renderBackupUi();
+        showToast('Herinnering tijdelijk verborgen (tot morgen of over 5 wijzigingen).');
+      }
+
+      /* =====================================================================
+         Beheer van personenlijst ('Bespreken met') in localStorage
+         ===================================================================== */
+      function normalizePeopleList(rawList) {
+        const seen = new Set();
+        const merged = [];
+
+        const appendName = (name) => {
+          if (typeof name !== 'string') return;
+          const clean = name.trim().replace(/\s+/g, ' ').slice(0, 40);
+          if (!clean) return;
+          const lower = clean.toLowerCase();
+          if (!seen.has(lower)) {
+            seen.add(lower);
+            merged.push(clean);
+          }
+        };
+
+        DEFAULT_PEOPLE.forEach(appendName);
+        if (Array.isArray(rawList)) {
+          rawList.forEach(appendName);
+        }
+        return merged;
+      }
+
+      function loadPeople() {
+        try {
+          const raw = localStorage.getItem(PEOPLE_KEY);
+          if (!raw) {
+            people = [...DEFAULT_PEOPLE];
+            return;
+          }
+          const parsed = JSON.parse(raw);
+          people = normalizePeopleList(parsed);
+        } catch (err) {
+          console.warn('Kan personenlijst niet laden:', err);
+          people = [...DEFAULT_PEOPLE];
+        }
+      }
+
+      function savePeople() {
+        try {
+          localStorage.setItem(PEOPLE_KEY, JSON.stringify(people));
+        } catch (err) {
+          console.warn('Kan personenlijst niet opslaan:', err);
+        }
+      }
+
+      function ensurePersonExists(name) {
+        const clean = typeof name === 'string' ? name.trim().replace(/\s+/g, ' ').slice(0, 40) : '';
+        if (!clean) return { name: '', added: false };
+        const existing = people.find((p) => p.toLowerCase() === clean.toLowerCase());
+        if (existing) return { name: existing, added: false };
+        people.push(clean);
+        savePeople();
+        return { name: clean, added: true };
+      }
+
+      function refreshPersonDropdowns() {
+        document.querySelectorAll('select[data-person-select]').forEach((selectEl) => {
+          const prevVal = selectEl.value;
+          selectEl.innerHTML = '';
+
+          const emptyOpt = document.createElement('option');
+          emptyOpt.value = '';
+          emptyOpt.textContent = 'Niemand (geen)';
+          selectEl.appendChild(emptyOpt);
+
+          people.forEach((name) => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            selectEl.appendChild(opt);
+          });
+
+          if (prevVal && people.includes(prevVal)) {
+            selectEl.value = prevVal;
+          } else {
+            selectEl.value = '';
+          }
+        });
+
+        const prevFilterVal = personFilter;
+        filterPersonSelect.innerHTML = '';
+
+        const allOpt = document.createElement('option');
+        allOpt.value = 'Alle';
+        allOpt.textContent = 'Alle personen';
+        filterPersonSelect.appendChild(allOpt);
+
+        const sortedPeople = [...people].sort((a, b) => a.localeCompare(b, 'nl', { sensitivity: 'base' }));
+        sortedPeople.forEach((name) => {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = `Bespreken: ${name}`;
+          filterPersonSelect.appendChild(opt);
+        });
+
+        const noneOpt = document.createElement('option');
+        noneOpt.value = '__NONE__';
+        noneOpt.textContent = 'Zonder persoon';
+        filterPersonSelect.appendChild(noneOpt);
+
+        if (prevFilterVal === 'Alle' || prevFilterVal === '__NONE__' || people.includes(prevFilterVal)) {
+          filterPersonSelect.value = prevFilterVal;
+        } else {
+          personFilter = 'Alle';
+          filterPersonSelect.value = 'Alle';
+        }
+      }
+
+      function refreshTagSelectors() {
+        const tagMap = new Map();
+        tasks.forEach((t) => {
+          if (Array.isArray(t.tags)) {
+            t.tags.forEach((tag) => {
+              const lower = tag.toLowerCase();
+              if (!tagMap.has(lower)) {
+                tagMap.set(lower, tag);
+              }
+            });
+          }
+        });
+
+        const uniqueTags = Array.from(tagMap.values()).sort((a, b) =>
+          a.localeCompare(b, 'nl', { sensitivity: 'base' })
+        );
+
+        tagsDatalist.innerHTML = '';
+        uniqueTags.forEach((tag) => {
+          const opt = document.createElement('option');
+          opt.value = tag;
+          tagsDatalist.appendChild(opt);
+        });
+
+        const prevTag = tagFilter;
+        filterTagSelect.innerHTML = '';
+
+        const allOpt = document.createElement('option');
+        allOpt.value = 'Alle';
+        allOpt.textContent = 'Alle tags';
+        filterTagSelect.appendChild(allOpt);
+
+        uniqueTags.forEach((tag) => {
+          const opt = document.createElement('option');
+          opt.value = tag;
+          opt.textContent = `#${tag}`;
+          filterTagSelect.appendChild(opt);
+        });
+
+        if (prevTag === 'Alle' || uniqueTags.some((t) => t.toLowerCase() === prevTag.toLowerCase())) {
+          const matched = uniqueTags.find((t) => t.toLowerCase() === prevTag.toLowerCase());
+          tagFilter = prevTag === 'Alle' ? 'Alle' : matched;
+          filterTagSelect.value = tagFilter;
+        } else {
+          tagFilter = 'Alle';
+          filterTagSelect.value = 'Alle';
+        }
+      }
+
+      /* =====================================================================
+         Interactieve tag-chips renderer
+         ===================================================================== */
+      function renderTagChips(chipsContainer, tagsArray) {
+        chipsContainer.innerHTML = '';
+        tagsArray.forEach((tag, idx) => {
+          const chip = document.createElement('span');
+          chip.className = 'tag-chip';
+
+          const label = document.createElement('span');
+          label.textContent = `#${tag}`;
+          chip.appendChild(label);
+
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'tag-chip-remove';
+          removeBtn.setAttribute('aria-label', `Verwijder tag ${tag}`);
+          removeBtn.textContent = '×';
+          removeBtn.addEventListener('click', () => {
+            tagsArray.splice(idx, 1);
+            renderTagChips(chipsContainer, tagsArray);
+          });
+          chip.appendChild(removeBtn);
+
+          chipsContainer.appendChild(chip);
+        });
+      }
+
+      function setupTagInputEditor(inputEl, addBtnEl, chipsContainer, getArray, setArray) {
+        const commitInput = () => {
+          const arr = getArray();
+          const added = addTagsFromInputString(inputEl.value, arr);
+          if (added) {
+            setArray(arr);
+            renderTagChips(chipsContainer, arr);
+          }
+          inputEl.value = '';
+        };
+
+        addBtnEl.addEventListener('click', () => {
+          commitInput();
+          inputEl.focus();
+        });
+
+        inputEl.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            commitInput();
+          } else if (e.key === 'Backspace' && inputEl.value === '') {
+            const arr = getArray();
+            if (arr.length > 0) {
+              arr.pop();
+              setArray(arr);
+              renderTagChips(chipsContainer, arr);
+            }
+          }
+        });
+
+        inputEl.addEventListener('blur', () => {
+          if (inputEl.value.trim()) {
+            commitInput();
+          }
+        });
+      }
+
+      /* =====================================================================
+         Thema (met dynamische theme-color update voor iOS) & Sorteervoorkeuren
+         ===================================================================== */
+      function applyTheme(theme) {
+        const isDark = theme === 'dark';
+        document.documentElement.classList.toggle('dark', isDark);
+        iconSun.classList.toggle('hidden', !isDark);
+        iconMoon.classList.toggle('hidden', isDark);
+
+        if (themeColorMeta) {
+          themeColorMeta.setAttribute('content', isDark ? '#0f172a' : '#f8fafc');
+        }
+        updateWebAppManifest(isDark);
+      }
+
+      function initTheme() {
+        let saved = null;
+        try {
+          saved = localStorage.getItem(THEME_KEY);
+        } catch (err) {
+          console.warn('Kan thema niet lezen:', err);
+        }
+
+        if (saved === 'dark' || saved === 'light') {
+          applyTheme(saved);
+        } else {
+          const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          applyTheme(prefersDark ? 'dark' : 'light');
+        }
+      }
+
+      function toggleTheme() {
+        const nextTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+        applyTheme(nextTheme);
+        try {
+          localStorage.setItem(THEME_KEY, nextTheme);
+        } catch (err) {
+          console.warn('Kan thema niet opslaan:', err);
+        }
+      }
+
+      function initSortPreferences() {
+        try {
+          const savedActive = localStorage.getItem(ACTIVE_SORT_KEY);
+          if (VALID_ACTIVE_SORTS.includes(savedActive)) {
+            activeSortBy = savedActive;
+          }
+        } catch (err) {
+          console.warn('Kan actieve sorteervoorkeur niet lezen:', err);
+        }
+
+        try {
+          const savedCompleted =
+            localStorage.getItem(COMPLETED_SORT_KEY) || localStorage.getItem(LEGACY_COMPLETED_GROUP_KEY);
+          if (VALID_COMPLETED_GROUPS.includes(savedCompleted)) {
+            completedGroupBy = savedCompleted;
+          }
+        } catch (err) {
+          console.warn('Kan afgeronde sorteervoorkeur niet lezen:', err);
+        }
+
+        syncActiveSortButtons();
+        syncCompletedGroupButtons();
+      }
+
+      function setActiveSortBy(mode) {
+        if (!VALID_ACTIVE_SORTS.includes(mode)) return;
+        activeSortBy = mode;
+        try {
+          localStorage.setItem(ACTIVE_SORT_KEY, mode);
+        } catch (err) {
+          console.warn('Kan actieve sorteervoorkeur niet opslaan:', err);
+        }
+        syncActiveSortButtons();
+        render();
+      }
+
+      function syncActiveSortButtons() {
+        activeSortButtons.forEach((btn) => {
+          const isActive = btn.dataset.activeSort === activeSortBy;
+          btn.classList.toggle('active', isActive);
+          btn.setAttribute('aria-pressed', String(isActive));
+        });
+      }
+
+      function setCompletedGroupBy(mode) {
+        if (!VALID_COMPLETED_GROUPS.includes(mode)) return;
+        completedGroupBy = mode;
+        try {
+          localStorage.setItem(COMPLETED_SORT_KEY, mode);
+        } catch (err) {
+          console.warn('Kan afgeronde sorteervoorkeur niet opslaan:', err);
+        }
+        syncCompletedGroupButtons();
+        render();
+      }
+
+      function syncCompletedGroupButtons() {
+        completedGroupButtons.forEach((btn) => {
+          const isActive = btn.dataset.completedGroup === completedGroupBy;
+          btn.classList.toggle('active', isActive);
+          btn.setAttribute('aria-pressed', String(isActive));
+        });
+      }
+
+      /* =====================================================================
+         Opslag van taken in localStorage
+         ===================================================================== */
+      function loadTasks() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) {
+            tasks = [];
+            return;
+          }
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            tasks = parsed.map(normalizeTask).filter(Boolean);
+            tasks.forEach((t) => {
+              if (t.person) ensurePersonExists(t.person);
+            });
+          } else {
+            tasks = [];
+          }
+        } catch (err) {
+          console.error('Fout bij het laden van taken:', err);
+          tasks = [];
+        }
+      }
+
+      function saveTasks() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+        } catch (err) {
+          console.error('Fout bij het opslaan van taken:', err);
+          showToast('Opslaan in browseropslag is mislukt.', false, true);
+        }
+      }
+
+      /* =====================================================================
+         Terugkerende taken: berekening van vervolgdatum
+         ===================================================================== */
+      function calculateNextDate(currentDueDate, recurrence) {
+        let base;
+        if (currentDueDate && /^\d{4}-\d{2}-\d{2}$/.test(currentDueDate)) {
+          const [y, m, d] = currentDueDate.split('-').map(Number);
+          base = new Date(y, m - 1, d);
+        } else {
+          base = new Date();
+          base.setHours(0, 0, 0, 0);
+        }
+
+        let next = new Date(base.getTime());
+
+        if (recurrence === 'daily') {
+          next.setDate(next.getDate() + 1);
+        } else if (recurrence === 'weekdays') {
+          next.setDate(next.getDate() + 1);
+          while (next.getDay() === 0 || next.getDay() === 6) {
+            next.setDate(next.getDate() + 1);
+          }
+        } else if (recurrence === 'weekly') {
+          next.setDate(next.getDate() + 7);
+        } else if (recurrence === 'monthly') {
+          const targetYear = base.getFullYear();
+          const targetMonth = base.getMonth() + 1;
+          const originalDay = base.getDate();
+          const lastDayOfMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+          next = new Date(targetYear, targetMonth, Math.min(originalDay, lastDayOfMonth));
+        } else if (recurrence === 'yearly') {
+          const targetYear = base.getFullYear() + 1;
+          const targetMonth = base.getMonth();
+          const originalDay = base.getDate();
+          const lastDayOfMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+          next = new Date(targetYear, targetMonth, Math.min(originalDay, lastDayOfMonth));
+        }
+
+        return formatDateYmd(next);
+      }
+
+      /* =====================================================================
+         Taak-acties (Toevoegen, Afvinken, Bewerken, Verwijderen, Undo)
+         ===================================================================== */
+      function addTask(e) {
+        e.preventDefault();
+
+        if (taskTagInput.value.trim()) {
+          addTagsFromInputString(taskTagInput.value, addFormTags);
+          taskTagInput.value = '';
+        }
+
+        const text = taskTitleInput.value.trim();
+        if (!text) {
+          taskTitleInput.focus();
+          showToast('Vul eerst een taakomschrijving in.', false, true);
+          return;
+        }
+
+        const newTask = {
+          id: generateId(),
+          text,
+          completed: false,
+          createdAt: Date.now(),
+          completedAt: null,
+          priority: taskPrioritySelect.value,
+          category: taskCategorySelect.value,
+          dueDate: taskDeadlineInput.value,
+          recurrence: taskRecurrenceSelect.value,
+          recurrenceSpawned: false,
+          person: taskPersonSelect.value || '',
+          tags: [...addFormTags]
+        };
+
+        tasks.unshift(newTask);
+        saveTasks();
+        refreshTagSelectors();
+        render();
+
+        taskTitleInput.value = '';
+        taskDeadlineInput.value = '';
+        taskRecurrenceSelect.value = 'none';
+        taskPersonSelect.value = '';
+        addFormTags = [];
+        renderTagChips(taskTagChips, addFormTags);
+
+        const autoExported = registerMutation(1);
+        if (!autoExported) {
+          showToast(newTask.recurrence !== 'none' ? 'Terugkerende taak toegevoegd.' : 'Taak toegevoegd.');
+        }
+      }
+
+      function toggleTask(id) {
+        const task = tasks.find((t) => t.id === id);
+        if (!task) return;
+
+        const willComplete = !task.completed;
+        task.completed = willComplete;
+        task.completedAt = willComplete ? new Date().toISOString() : null;
+
+        if (willComplete && !userToggledCompletedSection) {
+          isCompletedCollapsed = false;
+        }
+
+        if (willComplete && task.recurrence !== 'none' && !task.recurrenceSpawned) {
+          task.recurrenceSpawned = true;
+          const nextDueDate = calculateNextDate(task.dueDate, task.recurrence);
+
+          const spawnedTask = {
+            id: generateId(),
+            text: task.text,
+            completed: false,
+            createdAt: Date.now(),
+            completedAt: null,
+            priority: task.priority,
+            category: task.category,
+            dueDate: nextDueDate,
+            recurrence: task.recurrence,
+            recurrenceSpawned: false,
+            person: task.person || '',
+            tags: Array.isArray(task.tags) ? [...task.tags] : []
+          };
+
+          tasks.unshift(spawnedTask);
+          lastUndoAction = {
+            type: 'complete-recurring',
+            originalTaskId: task.id,
+            spawnedTaskId: spawnedTask.id
+          };
+
+          saveTasks();
+          refreshTagSelectors();
+          render();
+          const autoExported = registerMutation(1);
+          if (!autoExported) {
+            showToast(`Afgerond! Volgende herhaling ingepland voor ${formatDateLongNl(nextDueDate)}.`, true);
+          }
+          return;
+        }
+
+        saveTasks();
+        render();
+        registerMutation(1);
+      }
+
+      function deleteTask(id) {
+        const index = tasks.findIndex((t) => t.id === id);
+        if (index === -1) return;
+
+        const [removed] = tasks.splice(index, 1);
+        lastUndoAction = {
+          type: 'delete',
+          task: removed,
+          index
+        };
+
+        saveTasks();
+        refreshTagSelectors();
+        render();
+
+        const autoExported = registerMutation(1);
+        if (!autoExported) {
+          showToast('Taak verwijderd.', true);
+        }
+      }
+
+      function requestClearCompleted() {
+        const completedCount = tasks.filter((t) => t.completed).length;
+        if (completedCount === 0) return;
+
+        clearCompletedSummary.textContent = `Weet je zeker dat je ${completedCount} afgeronde ${completedCount === 1 ? 'taak' : 'taken'} wilt wissen?`;
+        openModal(clearCompletedModal);
+      }
+
+      function executeClearCompleted() {
+        const completedCount = tasks.filter((t) => t.completed).length;
+        closeModal(clearCompletedModal);
+        if (completedCount === 0) return;
+
+        const snapshot = tasks.map((t) => ({ ...t, tags: [...(t.tags || [])] }));
+        tasks = tasks.filter((t) => !t.completed);
+        lastUndoAction = {
+          type: 'restore-snapshot',
+          tasks: snapshot
+        };
+
+        saveTasks();
+        refreshTagSelectors();
+        render();
+
+        const autoExported = registerMutation(1);
+        if (!autoExported) {
+          showToast(`${completedCount} afgeronde ${completedCount === 1 ? 'taak' : 'taken'} gewist.`, true);
+        }
+      }
+
+      function handleUndo() {
+        if (!lastUndoAction) return;
+        const action = lastUndoAction;
+        lastUndoAction = null;
+
+        if (action.type === 'delete') {
+          const insertIdx = Math.min(action.index, tasks.length);
+          tasks.splice(insertIdx, 0, action.task);
+          saveTasks();
+          refreshTagSelectors();
+          render();
+          showToast('Verwijdering ongedaan gemaakt.');
+        } else if (action.type === 'complete-recurring') {
+          const original = tasks.find((t) => t.id === action.originalTaskId);
+          if (original) {
+            original.completed = false;
+            original.completedAt = null;
+            original.recurrenceSpawned = false;
+          }
+          tasks = tasks.filter((t) => t.id !== action.spawnedTaskId);
+          saveTasks();
+          refreshTagSelectors();
+          render();
+          showToast('Afronden en nieuwe herhaling ongedaan gemaakt.');
+        } else if (action.type === 'bulk-import') {
+          const importedIds = new Set(action.ids);
+          tasks = tasks.filter((t) => !importedIds.has(t.id));
+          saveTasks();
+          refreshTagSelectors();
+          render();
+          showToast('Bulk-import ongedaan gemaakt.');
+        } else if (action.type === 'restore-snapshot') {
+          tasks = action.tasks;
+          saveTasks();
+          refreshTagSelectors();
+          render();
+          showToast('Afgeronde taken hersteld.');
+        }
+      }
+
+      /* =====================================================================
+         Modals openen & sluiten
+         ===================================================================== */
+      function openModal(modalEl) {
+        modalEl.classList.add('open');
+      }
+
+      function closeModal(modalEl) {
+        modalEl.classList.remove('open');
+        if (modalEl === jsonImportModal) {
+          pendingJsonImport = null;
+        }
+        if (modalEl === addPersonModal) {
+          addPersonTargetSelectId = null;
+          newPersonNameInput.value = '';
+        }
+      }
+
+      function closeTopModalOrAll() {
+        if (addPersonModal.classList.contains('open')) {
+          closeModal(addPersonModal);
+          return;
+        }
+        [editModal, textImportModal, jsonImportModal, clearCompletedModal].forEach((m) => closeModal(m));
+      }
+
+      function openEditModal(id) {
+        const task = tasks.find((t) => t.id === id);
+        if (!task) return;
+
+        if (task.person) {
+          ensurePersonExists(task.person);
+          refreshPersonDropdowns();
+        }
+
+        editIdInput.value = task.id;
+        editTitleInput.value = task.text;
+        editPrioritySelect.value = task.priority;
+        editCategorySelect.value = task.category;
+        editPersonSelect.value = task.person || '';
+        editDeadlineInput.value = task.dueDate || '';
+        editRecurrenceSelect.value = task.recurrence || 'none';
+
+        editFormTags = Array.isArray(task.tags) ? [...task.tags] : [];
+        editTagInput.value = '';
+        renderTagChips(editTagChips, editFormTags);
+
+        openModal(editModal);
+        editTitleInput.focus();
+      }
+
+      function saveEditForm(e) {
+        e.preventDefault();
+
+        if (editTagInput.value.trim()) {
+          addTagsFromInputString(editTagInput.value, editFormTags);
+          editTagInput.value = '';
+        }
+
+        const id = editIdInput.value;
+        const text = editTitleInput.value.trim();
+        if (!text) {
+          editTitleInput.focus();
+          showToast('Taakomschrijving mag niet leeg zijn.', false, true);
+          return;
+        }
+
+        const task = tasks.find((t) => t.id === id);
+        if (task) {
+          task.text = text;
+          task.priority = editPrioritySelect.value;
+          task.category = editCategorySelect.value;
+          task.person = editPersonSelect.value || '';
+          task.tags = [...editFormTags];
+          task.dueDate = editDeadlineInput.value;
+
+          const nextRecurrence = editRecurrenceSelect.value;
+          if (task.recurrence !== nextRecurrence && !task.completed) {
+            task.recurrenceSpawned = false;
+          }
+          task.recurrence = nextRecurrence;
+
+          saveTasks();
+          refreshTagSelectors();
+          render();
+
+          closeModal(editModal);
+          const autoExported = registerMutation(1);
+          if (!autoExported) {
+            showToast('Taak bijgewerkt.');
+          }
+          return;
+        }
+
+        closeModal(editModal);
+      }
+
+      function openAddPersonModal(targetSelectId) {
+        addPersonTargetSelectId = targetSelectId;
+        newPersonNameInput.value = '';
+        openModal(addPersonModal);
+        setTimeout(() => newPersonNameInput.focus(), 30);
+      }
+
+      function handleAddPersonSubmit(e) {
+        e.preventDefault();
+        const rawName = newPersonNameInput.value.trim();
+        if (!rawName) {
+          newPersonNameInput.focus();
+          showToast('Vul een naam in.', false, true);
+          return;
+        }
+
+        const { name: savedName, added } = ensurePersonExists(rawName);
+        refreshPersonDropdowns();
+
+        if (addPersonTargetSelectId) {
+          const targetSelect = document.getElementById(addPersonTargetSelectId);
+          if (targetSelect) {
+            targetSelect.value = savedName;
+          }
+        }
+
+        closeModal(addPersonModal);
+        if (added) {
+          const autoExported = registerMutation(1);
+          if (!autoExported) {
+            showToast(`"${savedName}" toegevoegd aan 'Bespreken met'.`);
+          }
+        } else {
+          showToast(`"${savedName}" staat al in de lijst en is geselecteerd.`);
+        }
+      }
+
+      /* =====================================================================
+         Bulk-import van gewone tekstregels (.txt / .md)
+         ===================================================================== */
+      function parseTextLines(rawText, detectCompleted) {
+        if (!rawText) return [];
+        const lines = rawText.split(/\r?\n/);
+        const parsed = [];
+
+        for (const rawLine of lines) {
+          let line = rawLine.trim();
+          if (!line) continue;
+
+          let isCompleted = false;
+
+          const checkboxMatch = line.match(/^(?:[-*•]\s+|\d+[.)]\s+)?\[([ xX])\]\s*(.*)$/);
+          if (checkboxMatch) {
+            if (detectCompleted && checkboxMatch[1].toLowerCase() === 'x') {
+              isCompleted = true;
+            }
+            line = checkboxMatch[2].trim();
+          } else {
+            line = line.replace(/^(?:[-*•]+|\d+[.)])\s+/, '').trim();
+          }
+
+          if (line) {
+            parsed.push({ text: line, completed: isCompleted });
+          }
+        }
+
+        return parsed;
+      }
+
+      function updateTextImportCounter() {
+        const items = parseTextLines(textImportArea.value, textImportDetectDone.checked);
+        const count = items.length;
+        textImportCounter.textContent = `${count} ${count === 1 ? 'taak' : 'taken'} klaar om te importeren`;
+        textImportSubmitBtn.disabled = count === 0;
+      }
+
+      function handleTextImportSubmit(e) {
+        e.preventDefault();
+
+        if (textImportTagInput.value.trim()) {
+          addTagsFromInputString(textImportTagInput.value, importFormTags);
+          textImportTagInput.value = '';
+        }
+
+        const items = parseTextLines(textImportArea.value, textImportDetectDone.checked);
+        if (items.length === 0) return;
+
+        const defaultPriority = textImportPriority.value;
+        const defaultCategory = textImportCategory.value;
+        const defaultPerson = textImportPerson.value || '';
+        const defaultDueDate = textImportDeadline.value;
+        const defaultRecurrence = textImportRecurrence.value;
+        const defaultTags = [...importFormTags];
+
+        const now = Date.now();
+        const nowIso = new Date(now).toISOString();
+
+        const created = items.map((item, idx) => ({
+          id: generateId(),
+          text: item.text,
+          completed: item.completed,
+          createdAt: now - idx,
+          completedAt: item.completed ? nowIso : null,
+          priority: defaultPriority,
+          category: defaultCategory,
+          dueDate: defaultDueDate,
+          recurrence: defaultRecurrence,
+          recurrenceSpawned: item.completed && defaultRecurrence !== 'none',
+          person: defaultPerson,
+          tags: [...defaultTags]
+        }));
+
+        tasks = [...created, ...tasks];
+        lastUndoAction = {
+          type: 'bulk-import',
+          ids: created.map((t) => t.id)
+        };
+
+        saveTasks();
+        refreshTagSelectors();
+        render();
+
+        textImportArea.value = '';
+        textImportDeadline.value = '';
+        textImportPerson.value = '';
+        textImportRecurrence.value = 'none';
+        importFormTags = [];
+        renderTagChips(textImportTagChips, importFormTags);
+        updateTextImportCounter();
+        closeModal(textImportModal);
+
+        const count = created.length;
+        const autoExported = registerMutation(count);
+        if (!autoExported) {
+          showToast(`${count} ${count === 1 ? 'taak' : 'taken'} geïmporteerd.`, true);
+        }
+      }
+
+      function handleTxtFileUpload(e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          const content = typeof ev.target.result === 'string' ? ev.target.result : '';
+          if (textImportArea.value.trim()) {
+            textImportArea.value = textImportArea.value.replace(/\s+$/, '') + '\n' + content;
+          } else {
+            textImportArea.value = content;
+          }
+          updateTextImportCounter();
+          showToast(`Bestand "${file.name}" ingeladen.`);
+        };
+        reader.onerror = function () {
+          showToast('Kon het tekstbestand niet lezen.', false, true);
+        };
+        reader.readAsText(file, 'UTF-8');
+
+        txtFileInput.value = '';
+      }
+
+      /* =====================================================================
+         JSON-back-up: Exporteren (per apparaat) & Importeren (Desktop + iPhone)
+         ===================================================================== */
+      function exportJsonBackup(options = {}) {
+        const isAuto = Boolean(options.isAuto);
+        const todayYmd = formatDateYmd(new Date());
+        const fileName = `todo-backup-${currentDevice.slug}-${todayYmd}.json`;
+
+        const payload = {
+          version: BACKUP_VERSION,
+          exportedAt: new Date().toISOString(),
+          device: currentDevice.slug,
+          deviceLabel: currentDevice.label,
+          people: [...people],
+          tasks: tasks
+        };
+
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        // Reset teller en werk back-upmetadata bij
+        backupMeta.changesSinceBackup = 0;
+        backupMeta.lastBackupAt = new Date().toISOString();
+        backupMeta.reminderDismissedUntilChange = 0;
+        backupMeta.reminderSnoozedUntil = 0;
+        backupMeta.showPostAutoExportMergeReminder = isAuto;
+        saveBackupMeta();
+        renderBackupUi();
+
+        if (isAuto) {
+          showToast(`25 wijzigingen bereikt! Automatische back-up gestart: ${fileName}`);
+        } else {
+          showToast(`Back-up gedownload: ${fileName} (${tasks.length} ${tasks.length === 1 ? 'taak' : 'taken'}).`);
+        }
+      }
+
+      function resolveDeviceLabel(slug, explicitLabel) {
+        if (explicitLabel && typeof explicitLabel === 'string') return explicitLabel.trim();
+        if (slug && DEVICE_LABELS[String(slug).toLowerCase()]) {
+          return DEVICE_LABELS[String(slug).toLowerCase()];
+        }
+        return '';
+      }
+
+      function handleJsonFileSelected(e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          try {
+            const rawText = typeof ev.target.result === 'string' ? ev.target.result : '';
+            const data = JSON.parse(rawText);
+
+            let rawList = null;
+            let importedPeople = [];
+            let sourceDeviceLabel = '';
+            let exportedAt = null;
+
+            if (Array.isArray(data)) {
+              rawList = data;
+            } else if (data && typeof data === 'object' && Array.isArray(data.tasks)) {
+              rawList = data.tasks;
+              if (Array.isArray(data.people)) {
+                importedPeople = data.people;
+              }
+              sourceDeviceLabel = resolveDeviceLabel(data.device, data.deviceLabel);
+              if (typeof data.exportedAt === 'string') {
+                exportedAt = data.exportedAt;
+              }
+            }
+
+            if (!rawList) {
+              showToast('Ongeldig JSON-bestand: geen takenlijst gevonden.', false, true);
+              return;
+            }
+
+            const validTasks = rawList.map(normalizeTask).filter(Boolean);
+            if (validTasks.length === 0) {
+              showToast('Het JSON-bestand bevat geen geldige taken.', false, true);
+              return;
+            }
+
+            pendingJsonImport = {
+              tasks: validTasks,
+              people: importedPeople,
+              sourceDeviceLabel,
+              exportedAt
+            };
+
+            const count = validTasks.length;
+            jsonImportSummary.textContent = `Er ${count === 1 ? 'is' : 'zijn'} ${count} geldige ${count === 1 ? 'taak' : 'taken'} gevonden in "${file.name}".`;
+
+            // Toon bronapparaat & exportdatum indien aanwezig
+            const metaBadges = [];
+            if (sourceDeviceLabel) {
+              metaBadges.push(`<span class="badge badge-person">Bronapparaat: ${escapeHtml(sourceDeviceLabel)}</span>`);
+            }
+            if (exportedAt) {
+              const formattedDate = formatDateTimeShortNl(exportedAt);
+              if (formattedDate) {
+                metaBadges.push(`<span class="badge badge-category">Geëxporteerd: ${escapeHtml(formattedDate)}</span>`);
+              }
+            }
+            jsonImportMeta.innerHTML = metaBadges.join('');
+
+            openModal(jsonImportModal);
+          } catch (err) {
+            console.error('JSON-importfout:', err);
+            showToast('Het gekozen bestand is geen geldige JSON-back-up.', false, true);
+          }
+        };
+        reader.onerror = function () {
+          showToast('Kon het JSON-bestand niet lezen.', false, true);
+        };
+        reader.readAsText(file, 'UTF-8');
+
+        jsonFileInput.value = '';
+      }
+
+      function syncPeopleFromImport(importedTasks, importedPeople) {
+        if (Array.isArray(importedPeople)) {
+          importedPeople.forEach((p) => ensurePersonExists(p));
+        }
+        importedTasks.forEach((t) => {
+          if (t.person) ensurePersonExists(t.person);
+        });
+        refreshPersonDropdowns();
+      }
+
+      function mergeImportedJson() {
+        if (!pendingJsonImport) return;
+        const { tasks: importedTasks, people: importedPeople, sourceDeviceLabel } = pendingJsonImport;
+
+        const mapById = new Map();
+        tasks.forEach((t) => mapById.set(t.id, t));
+        importedTasks.forEach((t) => mapById.set(t.id, t));
+
+        tasks = Array.from(mapById.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        syncPeopleFromImport(importedTasks, importedPeople);
+
+        // Registreer succesvolle samenvoeging (Desktop + iPhone)
+        backupMeta.lastMergeAt = new Date().toISOString();
+        backupMeta.showPostAutoExportMergeReminder = false;
+        saveBackupMeta();
+
+        saveTasks();
+        refreshTagSelectors();
+        render();
+        renderBackupUi();
+        closeModal(jsonImportModal);
+
+        const fromText = sourceDeviceLabel ? ` (vanaf ${sourceDeviceLabel})` : '';
+        showToast(`${importedTasks.length} ${importedTasks.length === 1 ? 'taak' : 'taken'} samengevoegd${fromText}.`);
+      }
+
+      function replaceWithImportedJson() {
+        if (!pendingJsonImport) return;
+        const { tasks: importedTasks, people: importedPeople } = pendingJsonImport;
+
+        tasks = [...importedTasks];
+        people = normalizePeopleList(importedPeople);
+        importedTasks.forEach((t) => {
+          if (t.person) ensurePersonExists(t.person);
+        });
+        savePeople();
+        refreshPersonDropdowns();
+
+        backupMeta.showPostAutoExportMergeReminder = false;
+        saveBackupMeta();
+
+        saveTasks();
+        refreshTagSelectors();
+        render();
+        renderBackupUi();
+        closeModal(jsonImportModal);
+        showToast(`Takenlijst vervangen door ${tasks.length} ${tasks.length === 1 ? 'taak' : 'taken'}.`);
+      }
+
+      /* =====================================================================
+         Toast-systeem
+         ===================================================================== */
+      function showToast(message, withUndo = false, isError = false) {
+        if (toastTimer) {
+          clearTimeout(toastTimer);
+          toastTimer = null;
+        }
+
+        toastContainer.innerHTML = '';
+        const toastEl = document.createElement('div');
+        toastEl.className = 'toast' + (isError ? ' toast-error' : '');
+
+        const textSpan = document.createElement('span');
+        textSpan.textContent = message;
+        toastEl.appendChild(textSpan);
+
+        if (withUndo) {
+          const undoBtn = document.createElement('button');
+          undoBtn.type = 'button';
+          undoBtn.className = 'toast-undo-btn';
+          undoBtn.textContent = 'Ongedaan maken';
+          undoBtn.addEventListener('click', handleUndo);
+          toastEl.appendChild(undoBtn);
+        }
+
+        toastContainer.appendChild(toastEl);
+
+        toastTimer = setTimeout(() => {
+          toastContainer.innerHTML = '';
+          toastTimer = null;
+        }, withUndo ? 6000 : 4000);
+      }
+
+      /* =====================================================================
+         Filter-, Sorteer- & Groepeerlogica
+         ===================================================================== */
+      function hasAnyFilterActive() {
+        return (
+          searchQuery.trim().length > 0 ||
+          categoryFilter !== 'Alle' ||
+          priorityFilter !== 'Alle' ||
+          recurrenceFilter !== 'Alle' ||
+          personFilter !== 'Alle' ||
+          tagFilter !== 'Alle'
+        );
+      }
+
+      function resetAllFilters() {
+        searchQuery = '';
+        searchInput.value = '';
+        clearSearchBtn.classList.add('hidden');
+
+        categoryFilter = 'Alle';
+        filterCategorySelect.value = 'Alle';
+
+        priorityFilter = 'Alle';
+        filterPrioritySelect.value = 'Alle';
+
+        recurrenceFilter = 'Alle';
+        filterRecurrenceSelect.value = 'Alle';
+
+        personFilter = 'Alle';
+        filterPersonSelect.value = 'Alle';
+
+        tagFilter = 'Alle';
+        filterTagSelect.value = 'Alle';
+
+        render();
+      }
+
+      function matchesFilters(task) {
+        if (categoryFilter !== 'Alle' && task.category !== categoryFilter) return false;
+        if (priorityFilter !== 'Alle' && task.priority !== priorityFilter) return false;
+        if (recurrenceFilter === 'Terugkerend' && task.recurrence === 'none') return false;
+        if (recurrenceFilter === 'Eenmalig' && task.recurrence !== 'none') return false;
+
+        if (personFilter === '__NONE__') {
+          if (task.person) return false;
+        } else if (personFilter !== 'Alle') {
+          if ((task.person || '').toLowerCase() !== personFilter.toLowerCase()) return false;
+        }
+
+        if (tagFilter !== 'Alle') {
+          const tags = Array.isArray(task.tags) ? task.tags : [];
+          if (!tags.some((t) => t.toLowerCase() === tagFilter.toLowerCase())) return false;
+        }
+
+        const q = searchQuery.trim().toLowerCase();
+        if (q) {
+          const haystack = [
+            task.text,
+            task.person || '',
+            ...(Array.isArray(task.tags) ? task.tags.map((t) => `#${t} ${t}`) : [])
+          ]
+            .join(' ')
+            .toLowerCase();
+
+          if (!haystack.includes(q)) return false;
+        }
+
+        return true;
+      }
+
+      function compareByDeadlineThenPriority(a, b) {
+        const da = a.dueDate || '';
+        const db = b.dueDate || '';
+        if (da && db && da !== db) return da.localeCompare(db);
+        if (da && !db) return -1;
+        if (!da && db) return 1;
+
+        const pa = PRIORITY_RANK[a.priority] ?? 1;
+        const pb = PRIORITY_RANK[b.priority] ?? 1;
+        if (pa !== pb) return pa - pb;
+
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      }
+
+      function sortByCompletedDateDesc(a, b) {
+        const da = getEffectiveCompletedDate(a);
+        const db = getEffectiveCompletedDate(b);
+        const ta = da ? da.getTime() : 0;
+        const tb = db ? db.getTime() : 0;
+        if (tb !== ta) return tb - ta;
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      }
+
+      function groupTasksByPerson(list, innerComparator) {
+        const personMap = new Map();
+        const noPersonTasks = [];
+
+        list.forEach((task) => {
+          const p = (task.person || '').trim();
+          if (!p) {
+            noPersonTasks.push(task);
+          } else {
+            const key = p.toLowerCase();
+            if (!personMap.has(key)) {
+              personMap.set(key, { name: p, tasks: [] });
+            }
+            personMap.get(key).tasks.push(task);
+          }
+        });
+
+        const sortedEntries = Array.from(personMap.values()).sort((a, b) =>
+          a.name.localeCompare(b.name, 'nl', { sensitivity: 'base' })
+        );
+
+        const groups = sortedEntries.map((entry) => ({
+          label: `Bespreken met ${entry.name}`,
+          accentClass: 'accent-person',
+          dotClass: 'group-dot-person',
+          tasks: entry.tasks.sort(innerComparator)
+        }));
+
+        if (noPersonTasks.length > 0) {
+          groups.push({
+            label: 'Zonder persoon',
+            accentClass: '',
+            dotClass: 'group-dot-neutral',
+            tasks: noPersonTasks.sort(innerComparator)
+          });
+        }
+
+        return groups;
+      }
+
+      function buildActiveGroups(activeTasks) {
+        if (activeSortBy === 'newest') {
+          const sorted = [...activeTasks].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          return [{ flat: true, tasks: sorted }];
+        }
+
+        if (activeSortBy === 'deadline') {
+          const todayYmd = getRelativeYmd(0);
+          const weekEndYmd = getRelativeYmd(7);
+
+          const buckets = {
+            overdue: { label: 'Verlopen', accentClass: 'accent-danger', dotClass: 'group-dot-danger', tasks: [] },
+            today: { label: 'Vandaag', accentClass: 'accent-warning', dotClass: 'group-dot-warning', tasks: [] },
+            thisWeek: { label: 'Deze week', accentClass: 'accent-info', dotClass: 'group-dot-info', tasks: [] },
+            later: { label: 'Later', accentClass: '', dotClass: 'group-dot-neutral', tasks: [] },
+            none: { label: 'Geen deadline', accentClass: '', dotClass: 'group-dot-neutral', tasks: [] }
+          };
+
+          activeTasks.forEach((task) => {
+            if (!task.dueDate) {
+              buckets.none.tasks.push(task);
+            } else if (task.dueDate < todayYmd) {
+              buckets.overdue.tasks.push(task);
+            } else if (task.dueDate === todayYmd) {
+              buckets.today.tasks.push(task);
+            } else if (task.dueDate <= weekEndYmd) {
+              buckets.thisWeek.tasks.push(task);
+            } else {
+              buckets.later.tasks.push(task);
+            }
+          });
+
+          return [buckets.overdue, buckets.today, buckets.thisWeek, buckets.later, buckets.none]
+            .filter((b) => b.tasks.length > 0)
+            .map((b) => {
+              b.tasks.sort(compareByDeadlineThenPriority);
+              return b;
+            });
+        }
+
+        if (activeSortBy === 'priority') {
+          const prioMeta = {
+            Hoog: { label: 'Prioriteit: Hoog', accentClass: 'accent-danger', dotClass: 'group-dot-danger' },
+            Gemiddeld: { label: 'Prioriteit: Gemiddeld', accentClass: 'accent-warning', dotClass: 'group-dot-warning' },
+            Laag: { label: 'Prioriteit: Laag', accentClass: 'accent-success', dotClass: 'group-dot-success' }
+          };
+
+          const groups = [];
+          PRIORITY_GROUP_ORDER.forEach((prio) => {
+            const items = activeTasks.filter((t) => t.priority === prio).sort(compareByDeadlineThenPriority);
+            if (items.length > 0) {
+              groups.push({
+                label: prioMeta[prio].label,
+                accentClass: prioMeta[prio].accentClass,
+                dotClass: prioMeta[prio].dotClass,
+                tasks: items
+              });
+            }
+          });
+          return groups;
+        }
+
+        if (activeSortBy === 'category') {
+          const groups = [];
+          CATEGORY_GROUP_ORDER.forEach((cat) => {
+            const items = activeTasks.filter((t) => t.category === cat).sort(compareByDeadlineThenPriority);
+            if (items.length > 0) {
+              groups.push({ label: cat, accentClass: '', dotClass: '', tasks: items });
+            }
+          });
+          return groups;
+        }
+
+        if (activeSortBy === 'name') {
+          return groupTasksByPerson(activeTasks, compareByDeadlineThenPriority);
+        }
+
+        return [];
+      }
+
+      function buildCompletedGroups(completedTasks) {
+        if (completedGroupBy === 'month') {
+          const monthMap = new Map();
+
+          completedTasks.forEach((task) => {
+            const effDate = getEffectiveCompletedDate(task);
+            let key = '0000-00';
+            let label = 'Zonder datum';
+
+            if (effDate) {
+              const year = effDate.getFullYear();
+              const monthNum = String(effDate.getMonth() + 1).padStart(2, '0');
+              key = `${year}-${monthNum}`;
+              const rawMonth = effDate.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' });
+              label = rawMonth.charAt(0).toUpperCase() + rawMonth.slice(1);
+            }
+
+            if (!monthMap.has(key)) {
+              monthMap.set(key, { key, label, tasks: [], accentClass: '', dotClass: '' });
+            }
+            monthMap.get(key).tasks.push(task);
+          });
+
+          const sortedKeys = Array.from(monthMap.keys()).sort((a, b) => {
+            if (a === '0000-00') return 1;
+            if (b === '0000-00') return -1;
+            return b.localeCompare(a);
+          });
+
+          return sortedKeys.map((k) => {
+            const grp = monthMap.get(k);
+            grp.tasks.sort(sortByCompletedDateDesc);
+            return grp;
+          });
+        }
+
+        if (completedGroupBy === 'category') {
+          const groups = [];
+          CATEGORY_GROUP_ORDER.forEach((cat) => {
+            const items = completedTasks.filter((t) => t.category === cat).sort(sortByCompletedDateDesc);
+            if (items.length > 0) {
+              groups.push({ label: cat, accentClass: '', dotClass: '', tasks: items });
+            }
+          });
+          return groups;
+        }
+
+        if (completedGroupBy === 'priority') {
+          const prioMeta = {
+            Hoog: { label: 'Prioriteit: Hoog', accentClass: 'accent-danger', dotClass: 'group-dot-danger' },
+            Gemiddeld: { label: 'Prioriteit: Gemiddeld', accentClass: 'accent-warning', dotClass: 'group-dot-warning' },
+            Laag: { label: 'Prioriteit: Laag', accentClass: 'accent-success', dotClass: 'group-dot-success' }
+          };
+
+          const groups = [];
+          PRIORITY_GROUP_ORDER.forEach((prio) => {
+            const items = completedTasks.filter((t) => t.priority === prio).sort(sortByCompletedDateDesc);
+            if (items.length > 0) {
+              groups.push({
+                label: prioMeta[prio].label,
+                accentClass: prioMeta[prio].accentClass,
+                dotClass: prioMeta[prio].dotClass,
+                tasks: items
+              });
+            }
+          });
+          return groups;
+        }
+
+        if (completedGroupBy === 'name') {
+          return groupTasksByPerson(completedTasks, sortByCompletedDateDesc);
+        }
+
+        return [];
+      }
+
+      /* =====================================================================
+         Renderfuncties voor taakkaarten & secties
+         ===================================================================== */
+      function buildDeadlineBadgeHtml(dueDate, completed) {
+        if (!dueDate) return '';
+        const todayYmd = getRelativeYmd(0);
+        let badgeClass = 'badge-deadline';
+        let label = formatDateShortNl(dueDate);
+
+        if (!completed) {
+          if (dueDate < todayYmd) {
+            badgeClass = 'badge-deadline-overdue';
+            label = `Verlopen (${label})`;
+          } else if (dueDate === todayYmd) {
+            badgeClass = 'badge-deadline-today';
+            label = `Vandaag (${label})`;
+          }
+        }
+
+        return `<span class="badge ${badgeClass}" title="Deadline: ${escapeHtml(formatDateLongNl(dueDate))}">📅 ${escapeHtml(label)}</span>`;
+      }
+
+      function buildRecurrenceBadgeHtml(recurrence) {
+        if (!recurrence || recurrence === 'none') return '';
+        const label = RECURRENCE_LABELS[recurrence] || recurrence;
+        return `<span class="badge badge-recurrence" title="Terugkerende taak: ${escapeHtml(label)}">↻ ${escapeHtml(label)}</span>`;
+      }
+
+      function buildPersonBadgeHtml(person) {
+        if (!person) return '';
+        return `
+          <button
+            type="button"
+            class="badge badge-person badge-clickable"
+            data-filter-person="${escapeHtml(person)}"
+            title="Klik om te filteren op ${escapeHtml(person)}"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>Bespreken: ${escapeHtml(person)}</span>
+          </button>
+        `;
+      }
+
+      function buildTagsBadgesHtml(tags) {
+        if (!Array.isArray(tags) || tags.length === 0) return '';
+        return tags
+          .map(
+            (tag) => `
+            <button
+              type="button"
+              class="badge badge-tag badge-clickable"
+              data-filter-tag="${escapeHtml(tag)}"
+              title="Klik om te filteren op #${escapeHtml(tag)}"
+            >#${escapeHtml(tag)}</button>
+          `
+          )
+          .join('');
+      }
+
+      function buildCompletedDateBadgeHtml(task) {
+        if (!task.completed) return '';
+        const effDate = getEffectiveCompletedDate(task);
+        if (!effDate) return '';
+        const label = formatDateObjShortNl(effDate);
+        return `<span class="badge badge-completed-date" title="Afgerond op ${escapeHtml(label)}">✓ Afgerond op ${escapeHtml(label)}</span>`;
+      }
+
+      function createTaskElement(task) {
+        const li = document.createElement('li');
+        li.className = 'task-item' + (task.completed ? ' completed' : '');
+        li.dataset.id = task.id;
+
+        const priorityClass = `badge-priority-${task.priority.toLowerCase()}`;
+        const deadlineHtml = !task.completed ? buildDeadlineBadgeHtml(task.dueDate, false) : '';
+        const completedDateHtml = task.completed ? buildCompletedDateBadgeHtml(task) : '';
+        const recurrenceHtml = buildRecurrenceBadgeHtml(task.recurrence);
+        const personHtml = buildPersonBadgeHtml(task.person);
+        const tagsHtml = buildTagsBadgesHtml(task.tags);
+
+        li.innerHTML = `
+          <div class="task-checkbox-wrap">
+            <input
+              type="checkbox"
+              class="task-checkbox"
+              aria-label="Markeer '${escapeHtml(task.text)}' als ${task.completed ? 'actief' : 'afgerond'}"
+              ${task.completed ? 'checked' : ''}
+            />
+          </div>
+
+          <div class="task-body">
+            <p class="task-title">${escapeHtml(task.text)}</p>
+            <div class="task-badges">
+              <span class="badge ${priorityClass}">${escapeHtml(task.priority)}</span>
+              <span class="badge badge-category">${escapeHtml(task.category)}</span>
+              ${personHtml}
+              ${deadlineHtml}
+              ${completedDateHtml}
+              ${recurrenceHtml}
+              ${tagsHtml}
+            </div>
+          </div>
+
+          <div class="task-actions">
+            <button type="button" class="task-action-btn edit" title="Taak bewerken" aria-label="Bewerk taak">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button type="button" class="task-action-btn delete" title="Taak verwijderen" aria-label="Verwijder taak">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                <path d="M10 11v6"></path>
+                <path d="M14 11v6"></path>
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+              </svg>
+            </button>
+          </div>
+        `;
+
+        li.querySelector('.task-checkbox').addEventListener('change', () => toggleTask(task.id));
+        li.querySelector('.task-action-btn.edit').addEventListener('click', () => openEditModal(task.id));
+        li.querySelector('.task-action-btn.delete').addEventListener('click', () => deleteTask(task.id));
+
+        const personBtn = li.querySelector('[data-filter-person]');
+        if (personBtn) {
+          personBtn.addEventListener('click', () => {
+            const p = personBtn.getAttribute('data-filter-person');
+            personFilter = personFilter === p ? 'Alle' : p;
+            filterPersonSelect.value = personFilter;
+            render();
+          });
+        }
+
+        li.querySelectorAll('[data-filter-tag]').forEach((tagBtn) => {
+          tagBtn.addEventListener('click', () => {
+            const tg = tagBtn.getAttribute('data-filter-tag');
+            tagFilter = tagFilter.toLowerCase() === tg.toLowerCase() ? 'Alle' : tg;
+            filterTagSelect.value = tagFilter;
+            render();
+          });
+        });
+
+        return li;
+      }
+
+      function renderGroupsIntoContainer(containerEl, groups) {
+        containerEl.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+
+        groups.forEach((grp) => {
+          if (grp.flat) {
+            const ul = document.createElement('ul');
+            ul.className = 'task-list';
+            grp.tasks.forEach((task) => ul.appendChild(createTaskElement(task)));
+            fragment.appendChild(ul);
+            return;
+          }
+
+          const groupEl = document.createElement('div');
+          groupEl.className = 'task-group';
+
+          const headerEl = document.createElement('div');
+          headerEl.className = 'task-group-header' + (grp.accentClass ? ' ' + grp.accentClass : '');
+
+          const titleEl = document.createElement('h3');
+          titleEl.className = 'task-group-title';
+          if (grp.dotClass) {
+            const dot = document.createElement('span');
+            dot.className = `group-dot ${grp.dotClass}`;
+            titleEl.appendChild(dot);
+          }
+          const labelSpan = document.createElement('span');
+          labelSpan.textContent = grp.label;
+          titleEl.appendChild(labelSpan);
+
+          const countEl = document.createElement('span');
+          countEl.className = 'task-group-count';
+          countEl.textContent = `${grp.tasks.length} ${grp.tasks.length === 1 ? 'taak' : 'taken'}`;
+
+          headerEl.appendChild(titleEl);
+          headerEl.appendChild(countEl);
+          groupEl.appendChild(headerEl);
+
+          const ul = document.createElement('ul');
+          ul.className = 'task-list';
+          grp.tasks.forEach((task) => ul.appendChild(createTaskElement(task)));
+
+          groupEl.appendChild(ul);
+          fragment.appendChild(groupEl);
+        });
+
+        containerEl.appendChild(fragment);
+      }
+
+      function renderProgress() {
+        const total = tasks.length;
+        const completed = tasks.filter((t) => t.completed).length;
+        const active = total - completed;
+        const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+        progressTextEl.textContent = `${total} totaal · ${active} actief · ${completed} afgerond (${pct}%)`;
+        progressFillEl.style.width = `${pct}%`;
+        progressBarContainer.setAttribute('aria-valuenow', String(pct));
+
+        clearCompletedBtn.classList.toggle('hidden', completed === 0);
+      }
+
+      function renderActiveSection(filteredActive, totalActive) {
+        activeCountBadge.textContent = String(filteredActive.length);
+        activeGroupsContainer.innerHTML = '';
+
+        if (filteredActive.length === 0) {
+          activeEmptyStateEl.classList.remove('hidden');
+          if (totalActive === 0) {
+            activeEmptyTitleEl.textContent = 'Geen actieve taken';
+            activeEmptyDescEl.textContent = 'Alles is afgerond! Voeg hierboven een nieuwe taak toe of importeer een lijstje.';
+          } else {
+            activeEmptyTitleEl.textContent = 'Geen actieve taken gevonden';
+            activeEmptyDescEl.textContent = 'Pas je zoekopdracht of filters aan om andere actieve taken te zien.';
+          }
+          return;
+        }
+
+        activeEmptyStateEl.classList.add('hidden');
+        renderGroupsIntoContainer(activeGroupsContainer, buildActiveGroups(filteredActive));
+      }
+
+      function renderCompletedSection(filteredCompleted, totalCompleted) {
+        completedCountBadge.textContent = String(filteredCompleted.length);
+
+        if (!userToggledCompletedSection) {
+          isCompletedCollapsed = totalCompleted === 0;
+        }
+
+        completedSectionEl.classList.toggle('collapsed', isCompletedCollapsed);
+        toggleCompletedBtn.setAttribute('aria-expanded', String(!isCompletedCollapsed));
+
+        completedGroupsContainer.innerHTML = '';
+
+        if (filteredCompleted.length === 0) {
+          completedEmptyStateEl.classList.remove('hidden');
+          if (totalCompleted === 0) {
+            completedEmptyTitleEl.textContent = 'Nog geen afgeronde taken';
+            completedEmptyDescEl.textContent = 'Zodra je een taak afvinkt, verschijnt deze automatisch in dit overzicht.';
+          } else {
+            completedEmptyTitleEl.textContent = 'Geen afgeronde taken gevonden';
+            completedEmptyDescEl.textContent = 'Pas je zoekopdracht of filters aan om afgeronde taken te tonen.';
+          }
+          return;
+        }
+
+        completedEmptyStateEl.classList.add('hidden');
+        renderGroupsIntoContainer(completedGroupsContainer, buildCompletedGroups(filteredCompleted));
+      }
+
+      function render() {
+        renderProgress();
+        resetFiltersBtn.classList.toggle('hidden', !hasAnyFilterActive());
+
+        const allActive = tasks.filter((t) => !t.completed);
+        const allCompleted = tasks.filter((t) => t.completed);
+
+        const filteredActive = allActive.filter(matchesFilters);
+        const filteredCompleted = allCompleted.filter(matchesFilters);
+
+        renderActiveSection(filteredActive, allActive.length);
+        renderCompletedSection(filteredCompleted, allCompleted.length);
+      }
+
+      /* =====================================================================
+         Event Listeners koppelen
+         ===================================================================== */
+      function bindEvents() {
+        themeToggleBtn.addEventListener('click', toggleTheme);
+        taskForm.addEventListener('submit', addTask);
+
+        // Auto-export toggle & herinneringsbalk knoppen
+        autoExportToggleEl.addEventListener('change', (e) => {
+          backupMeta.autoExportEnabled = Boolean(e.target.checked);
+          saveBackupMeta();
+          renderBackupUi();
+          showToast(
+            backupMeta.autoExportEnabled
+              ? 'Automatische export bij 25 wijzigingen ingeschakeld.'
+              : 'Automatische export uitgeschakeld (je krijgt nog wel herinneringen).'
+          );
+        });
+
+        bannerBackupNowBtn.addEventListener('click', () => exportJsonBackup({ isAuto: false }));
+        bannerImportMergeBtn.addEventListener('click', () => jsonFileInput.click());
+        bannerSnoozeBtn.addEventListener('click', snoozeBackupReminder);
+
+        // Interactieve tag-editors voor alle 3 formulieren
+        setupTagInputEditor(
+          taskTagInput,
+          taskTagAddBtn,
+          taskTagChips,
+          () => addFormTags,
+          (arr) => { addFormTags = arr; }
+        );
+        setupTagInputEditor(
+          editTagInput,
+          editTagAddBtn,
+          editTagChips,
+          () => editFormTags,
+          (arr) => { editFormTags = arr; }
+        );
+        setupTagInputEditor(
+          textImportTagInput,
+          textImportTagAddBtn,
+          textImportTagChips,
+          () => importFormTags,
+          (arr) => { importFormTags = arr; }
+        );
+
+        // '+' knopjes naast alle 'Bespreken met'-dropdowns
+        document.querySelectorAll('[data-add-person-target]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            openAddPersonModal(btn.getAttribute('data-add-person-target'));
+          });
+        });
+        addPersonForm.addEventListener('submit', handleAddPersonSubmit);
+
+        // Zoeken & filters wissen
+        searchInput.addEventListener('input', (e) => {
+          searchQuery = e.target.value;
+          clearSearchBtn.classList.toggle('hidden', searchQuery.length === 0);
+          render();
+        });
+
+        clearSearchBtn.addEventListener('click', () => {
+          searchQuery = '';
+          searchInput.value = '';
+          clearSearchBtn.classList.add('hidden');
+          searchInput.focus();
+          render();
+        });
+
+        resetFiltersBtn.addEventListener('click', resetAllFilters);
+
+        // Dropdown-filters
+        filterCategorySelect.addEventListener('change', (e) => {
+          categoryFilter = e.target.value;
+          render();
+        });
+
+        filterPrioritySelect.addEventListener('change', (e) => {
+          priorityFilter = e.target.value;
+          render();
+        });
+
+        filterRecurrenceSelect.addEventListener('change', (e) => {
+          recurrenceFilter = e.target.value;
+          render();
+        });
+
+        filterPersonSelect.addEventListener('change', (e) => {
+          personFilter = e.target.value;
+          render();
+        });
+
+        filterTagSelect.addEventListener('change', (e) => {
+          tagFilter = e.target.value;
+          render();
+        });
+
+        // Rangschikknoppen voor Actieve taken
+        activeSortButtons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            setActiveSortBy(btn.dataset.activeSort);
+          });
+        });
+
+        // Afgeronde sectie in-/uitklappen
+        toggleCompletedBtn.addEventListener('click', () => {
+          userToggledCompletedSection = true;
+          isCompletedCollapsed = !isCompletedCollapsed;
+          completedSectionEl.classList.toggle('collapsed', isCompletedCollapsed);
+          toggleCompletedBtn.setAttribute('aria-expanded', String(!isCompletedCollapsed));
+        });
+
+        // Rangschikknoppen voor Afgeronde taken
+        completedGroupButtons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            setCompletedGroupBy(btn.dataset.completedGroup);
+          });
+        });
+
+        // Wis afgeronde taken
+        clearCompletedBtn.addEventListener('click', requestClearCompleted);
+        confirmClearCompletedBtn.addEventListener('click', executeClearCompleted);
+
+        // Bewerkmodal
+        editForm.addEventListener('submit', saveEditForm);
+
+        // Tekst-importmodal
+        openTextImportBtn.addEventListener('click', () => {
+          updateTextImportCounter();
+          openModal(textImportModal);
+          textImportArea.focus();
+        });
+
+        textImportArea.addEventListener('input', updateTextImportCounter);
+        textImportDetectDone.addEventListener('change', updateTextImportCounter);
+        textImportForm.addEventListener('submit', handleTextImportSubmit);
+
+        loadTxtFileBtn.addEventListener('click', () => txtFileInput.click());
+        txtFileInput.addEventListener('change', handleTxtFileUpload);
+
+        // JSON Export & Import
+        exportJsonBtn.addEventListener('click', () => exportJsonBackup({ isAuto: false }));
+        importJsonBtn.addEventListener('click', () => jsonFileInput.click());
+        jsonFileInput.addEventListener('change', handleJsonFileSelected);
+        jsonMergeBtn.addEventListener('click', mergeImportedJson);
+        jsonReplaceBtn.addEventListener('click', replaceWithImportedJson);
+
+        // Sluitknoppen (X en Annuleren) voor alle modals
+        document.querySelectorAll('[data-close-modal]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const modalId = btn.getAttribute('data-close-modal');
+            const modalEl = document.getElementById(modalId);
+            if (modalEl) closeModal(modalEl);
+          });
+        });
+
+        // Klik op backdrop sluit de modal
+        [editModal, textImportModal, jsonImportModal, clearCompletedModal, addPersonModal].forEach((modalEl) => {
+          modalEl.addEventListener('click', (e) => {
+            if (e.target === modalEl) {
+              closeModal(modalEl);
+            }
+          });
+        });
+
+        // Escape-toets sluit openstaande modal(s)
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            closeTopModalOrAll();
+          }
+        });
+      }
+
+      /* =====================================================================
+         Initialisatie
+         ===================================================================== */
+      function init() {
+        renderCurrentDate();
+        renderDeviceBadge();
+        initTheme();
+        initSortPreferences();
+        loadPeople();
+        loadTasks();
+        loadBackupMeta();
+        refreshPersonDropdowns();
+        refreshTagSelectors();
+        bindEvents();
+        render();
+        renderBackupUi();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
